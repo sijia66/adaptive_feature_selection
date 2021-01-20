@@ -2,6 +2,7 @@
 this file works with decoder weights
 the inputs to this functins are primarily np.arrays 
 """
+import numpy as np
 
 
 def _cal_tuning_angle_2D(mat_kf_c: np.array, vel_ind: tuple = (3,  5)) -> np.array:
