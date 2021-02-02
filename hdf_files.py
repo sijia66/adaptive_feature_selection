@@ -5,6 +5,7 @@ help with processing hdf files
 """
 
 import tables 
+import numpy as np
 
 
 def open_hdf_file(file_name:str = None, debug:bool = True) -> tables.Table:
@@ -25,7 +26,7 @@ def open_hdf_file(file_name:str = None, debug:bool = True) -> tables.Table:
         return hdffile
 
     except IOError:
-        print("File not accessible")
+        print(f{{__name__}:"{file_name} not accessible"})
 
     
 def open_many_hdf_files(file_names:tuple ,debug:bool = True) -> tuple:
@@ -37,3 +38,23 @@ def open_many_hdf_files(file_names:tuple ,debug:bool = True) -> tuple:
 
     hdf_files = [open_hdf_file(h) for h in file_names]
     return tuple(hdf_files)
+
+
+def get_kf_C_from_hdf(file_name:str, debug:bool = True) ->  np.array:
+    """
+    this function gets the observation matrix C from hdffil.clda table
+    assume the table exits
+    """
+    if debug:  print(f'{__name__}::assumes to take kf_c from {file_name}')
+
+    hdffile = open_hdf_file(file_name = file_name)
+    
+    if hdffile is None: raise Exception(f'{file_name} returns none')
+
+    clda_tables = hdffile.root.clda
+    if debug: print(f'{__name__}: {clda_tables.description}')
+
+    return clda_tables.col('kf_C')
+
+
+
