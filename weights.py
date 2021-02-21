@@ -3,6 +3,52 @@ this file works with decoder weights
 the inputs to this functins are primarily np.arrays 
 """
 import numpy as np
+from riglib.bmi.kfdecoder import KalmanFilter
+
+# we define a function that does this. 
+def replace_kalman_filter(target_kf, C:np.matrix, Q:np.matrix = np.nan, debug:bool = True):
+    """
+    this function replaces the observation matrix of target_kf to C and
+    replace the noise model 
+    """
+    
+    if not isinstance(target_kf, KalmanFilter):
+        raise Exception(f'{target_kf} is not an instance of riglib.bmi.kfdecoder.KalmanFilter' )
+    
+    C_before = target_kf.C
+    C_xpose_Q_inv_before = target_kf.C_xpose_Q_inv
+    C_xpose_Q_inv_C_before = target_kf.C_xpose_Q_inv_C
+    
+    if Q is np.nan: Q = target_kf.Q
+    
+    #calculate the new terms
+    C_xpose_Q_inv = C.T * np.linalg.pinv(Q)
+    C_xpose_Q_inv_C = C.T * np.linalg.pinv(Q) * C
+    
+    #reassign
+    target_kf.C = C
+    target_kf.C_xpose_Q_inv = C_xpose_Q_inv
+    target_kf.C_xpose_Q_inv_C = C_xpose_Q_inv_C
+    
+    if debug:
+        print('C matrix before')
+        print(C_before)
+        
+        print('C matrix after')
+        print(target_kf.C )
+        
+        print('C_xpose_Q_inv before:')
+        print(C_xpose_Q_inv_before)
+        
+        print('C_xpose_Q_inv_C after:')
+        print(target_kf.C_xpose_Q_inv)
+              
+        print('C_xpose_Q_inv_C_before:')
+        print(C_xpose_Q_inv_C_before)
+        
+        print('C_xpose_Q_inv_C after:')
+        print(target_kf.C_xpose_Q_inv_C)
+              
 
 
 def _cal_tuning_angle_2D(mat_kf_c: np.array, vel_ind: tuple = (3,  5)) -> np.array:

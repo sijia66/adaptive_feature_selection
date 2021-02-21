@@ -51,13 +51,15 @@ seq = SimBMIControlMulti.sim_target_seq_generator_multi(
 N_TARGETS, N_TRIALS)
 
 
+batch_size = 10
+
 # ##  simulation encoder decoder setup
 
 # In[ ]:
 
 
 #clda on random 
-DECODER_MODE = 'trainedKF' # in this case we load simulation_features.SimKFDecoderRandom
+DECODER_MODE = 'random' # in this case we load simulation_features.SimKFDecoderRandom
 ENCODER_TYPE = 'cosine_tuned_encoder'
 LEARNER_TYPE = 'feedback' # to dumb or not dumb it is a question 'feedback'
 UPDATER_TYPE = 'smooth_batch' #none or "smooth_batch"
@@ -79,7 +81,7 @@ N_NEURONS, N_STATES, sim_C = get_enc_setup(sim_mode = 'toy')
 
 
 # set up assist level
-assist_level = (0, 0)
+assist_level = (0.5, 0)
 
 #base_class = SimBMIControlMulti
 base_class = BMIControlMultiNoWindow
@@ -113,6 +115,8 @@ else: #defaul to a cosEnc and a pre-traind KF DEC
 if LEARNER_TYPE == 'feedback':
     from features.simulation_features import SimFeedbackLearner
     feats.append(SimFeedbackLearner)
+
+
 else:
     from features.simulation_features import SimDumbLearner
     feats.append(SimDumbLearner)
@@ -142,7 +146,11 @@ feats.append(SimTime)
 
 #save everthing in a kw
 kwargs = dict()
+kwargs['assist_level'] = assist_level
 kwargs['sim_C'] = sim_C
+
+#set up batch_size
+kwargs['batch_size'] = batch_size
 
 
 # ## make our experiment class
@@ -157,64 +165,13 @@ exp = Exp(seq, **kwargs)
 exp.init()
 
 
-# ## test run a bit
 
-# print(exp.state)
-# exp.run() 
-
-# # now comes to the step through BMIloop
-# 
-
-# ## decode neural features to move cursor
-# this section basically steps through the move_plant stuff
-# 
-# @riglib.bmi.BMILoop.move_plant
-
-# 
-# ### bmi feature extraction, eh
-# #riglib.bmi: 1202
-# feature_data = exp.get_features()
-# feature_data
-# 
-# ###  Determine the target_state and save to file
-# current_assist_level = exp.get_current_assist_level()
-# if np.any(current_assist_level > 0) or exp.learn_flag:
-#     target_state = exp.get_target_BMI_state(self.decoder.states)
-# else:
-#     target_state = np.ones([exp.decoder.n_states, exp.decoder.n_subbins]) * np.nan
-# 
-# 
-# #decode the new features
-# #riglib.bmi.bmiloop: line 1245
-# neural_features = feature_data[exp.extractor.feature_type]
-# tmp = exp.call_decoder(neural_features, target_state, **kwargs)
-# 
-# #saved as task data
-# exp.task_data['internal_decoder_state'] = tmp
-# tmp
-# 
-# #### reset the plant position
-# ####  @riglib.bmi.BMILoop.move_plant  line:1254
-# exp.plant.drive(exp.decoder)
-# exp.plant.position
-
-# # assemble into a complete loop
-
-# In[ ]:
-
-
-# riglib.experiment: line 597 - 601
-#exp.next_trial = next(exp.gen)
-# -+exp._parse_next_trial()
-
-
-# we need to set the initial state
-# per fsm.run:  line 138
 
 
 # Initialize the FSM before the loop
 exp.set_state(exp.state)
 
+exp.bmi_system.decoder.plot_K()
 
 while exp.state is not None:
    
@@ -237,6 +194,22 @@ while exp.state is not None:
     else:
         target_state = np.ones(
             [exp.decoder.n_states, exp.decoder.n_subbins]) * np.nan
+
+        # Determine the assistive control inputs to the Decoder
+    if np.any(current_assist_level) > 0:
+        current_state = exp.get_current_state()
+
+        if target_state.shape[1] > 1:
+            assist_kwargs = exp.assister(current_state, 
+                                            target_state[:,0].reshape(-1,1), 
+                                            current_assist_level, mode= exp.state)
+        else:
+            assist_kwargs = exp.assister(current_state, 
+                                            target_state, 
+                                            current_assist_level, 
+                                            mode= exp.state)
+
+        kwargs.update(assist_kwargs)
 
     # decode the new features
     # riglib.bmi.bmiloop: line 1245
@@ -288,7 +261,6 @@ while exp.state is not None:
                 learner_state = prev_state
 
             if learn_flag:
-                print(exp.bmi_system.decoder.ssm.state_order)
                 exp.bmi_system.learner(decodable_obs.copy(), learner_state, target_state_k, exp.bmi_system.decoder.get_state(), task_state, state_order= exp.bmi_system.decoder.ssm.state_order)
 
         decoded_states[:,k] = exp.bmi_system.decoder.get_state()        
@@ -297,6 +269,7 @@ while exp.state is not None:
         ## Update decoder parameters
         ############################
         if exp.bmi_system.learner.is_ready():
+            print(f'{__name__}:{exp.cycle_count}')
             batch_data = exp.bmi_system.learner.get_batch()
             batch_data['decoder'] = exp.bmi_system.decoder
             kwargs.update(batch_data)
@@ -366,9 +339,13 @@ while exp.state is not None:
     
     #save to the list hisory of data. 
     exp.task_data_hist.append(exp.task_data.copy())
+
         
 
 if exp.verbose:
     print("end of FSM.run, task state is", exp.state)
+    print(f'total rewards ')
+
+exp.decoder.plot_K()
 
 
