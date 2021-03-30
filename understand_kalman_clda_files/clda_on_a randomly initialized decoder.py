@@ -87,8 +87,8 @@ from riglib import experiment
 from riglib.stereo_opengl.window import FakeWindow
 from riglib.bmi import train
 
-from weights import replace_kalman_filter
-import weights
+#from ..weights import replace_kalman_filter
+#import weights
 
 import time
 import copy
