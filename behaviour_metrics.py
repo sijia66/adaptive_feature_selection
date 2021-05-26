@@ -30,7 +30,7 @@ def sort_trials(wait_time:list,
                                                        :]
         #add more info
         single_trial_dict['start_time'] = row[0]
-        single_trial_dict['inter_wait_time'] = row[1]
+        single_trial_dict['trial_time'] = row[1]
         
         #add target info
         single_trial_dict['targets'] = target_seq[i]
@@ -39,6 +39,26 @@ def sort_trials(wait_time:list,
         trial_dict.append(single_trial_dict)
         
     return trial_dict
+
+def segment_trials_in_state_log(state_log, 
+                      trial_end_states = ['reward', 'timeout_penalty', 'hold_penalty']):
+
+    segmented_trials = list()
+
+    single_trial_states = list()
+
+    for s in state_log:
+        state_name = s[0]
+        
+        if state_name in trial_end_states:
+            single_trial_states.append(s)
+            segmented_trials.append(single_trial_states)    
+            single_trial_states = list()
+            
+        else:
+            single_trial_states.append(s)
+
+    return segmented_trials
 
 def filter_state(state_log:list, state_to_match:str)->list:
     '''
@@ -51,13 +71,13 @@ def filter_state(state_log:list, state_to_match:str)->list:
     
     return list(filter(lambda k: k[0] == state_to_match, state_log) )
 
-def calc_inter_wait_times(wait_log: list)-> list:
+def calc_inter_trial_times(trial_log: list)-> list:
     """
     state_log: a list of tuples ("wait", start_time: float)
     return a list of tuples: ("wait", start_time: float, diff_time)
     """
     wait_log_with_diff = list()
-    for i, wait_state in enumerate(wait_log):
+    for i, wait_state in enumerate(trial_log):
         if i == len(wait_log)-1: #there is nothing to subtract, just put zero.
             wait_log_with_diff.append((wait_state[1],  0))
             
@@ -133,6 +153,6 @@ def calc_event_rate(event_record, window_length = 60, FS = 60):
 
     #folded into the windows  and count how many trials
     event_vec_folded = event_vec.reshape((-1, window_length_in_frames))
-    succuss_rate = np.sum(event_vec_folded, axis = 1) 
+    event_rate = np.sum(event_vec_folded, axis = 1) 
 
-    return succuss_rate 
+    return event_rate 
