@@ -2,6 +2,8 @@
 
 import numpy as np
 
+
+
 def sort_trials(wait_time:list, 
                 target_seq:list,
                 task_data_hist_np:dict, 
@@ -59,6 +61,43 @@ def segment_trials_in_state_log(state_log,
             single_trial_states.append(s)
 
     return segmented_trials
+
+def sort_trials_use_segmented_log(segmented_trials, target_seq:list, task_data_hist_np:dict, 
+                dict_keys, FRAME_RATE = 60):
+    
+    trial_dict = list()
+
+    target_ind = -1 #keeping track which target for each trial
+    
+    for i,st in enumerate(segmented_trials):
+        first_event_name, first_event_time = st[0]
+        last_event_name, last_event_time= st[-1]
+        trial_time = last_event_time - first_event_time
+
+        start_sample = int(first_event_time * FRAME_RATE)
+        inter_wait_sample = int(trial_time * FRAME_RATE)
+        stop_sample = start_sample + inter_wait_sample
+
+        single_trial_dict = dict()
+
+        for k in dict_keys:
+            
+            requested_type_data = np.squeeze(task_data_hist_np[k])
+            single_trial_dict[k] =  requested_type_data[start_sample:stop_sample,
+                                                       :]
+        #add event info
+        single_trial_dict['event_log'] = st
+        
+        #add target info
+        #only when there is a wait log
+        if first_event_name == 'wait': target_ind += 1
+        single_trial_dict['targets'] = target_seq[target_ind]
+
+        #add the dictionary to the list
+        trial_dict.append(single_trial_dict)
+        
+    return trial_dict
+
 
 def filter_state(state_log:list, state_to_match:str)->list:
     '''
