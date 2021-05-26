@@ -36,6 +36,20 @@ def calc_average_ssm_for_each_X_column(y, X, beta,
 
     return result
 
+def calc_average_ssm_for_each_y_row(y, C, X,
+                            return_normalized = True):
+    '''
+    assumes a kalman filter observation model
+    y = CX
+    take each y row 
+    the number of times are along the columns
+    '''
+
+    n_rows, n_cols = y.shape
+
+    np.sum(y - C@X, axis = 2)
+
+
 
 def calc_ssm_y_minus_x_beta(y:np.array, 
                                X: np.array,

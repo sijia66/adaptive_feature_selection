@@ -66,3 +66,73 @@ def calc_inter_wait_times(wait_log: list)-> list:
             wait_log_with_diff.append((wait_state[1],  finish_time - wait_state[1]))
     
     return np.array(wait_log_with_diff[:-1])
+
+
+def calc_arc_length(trial_cursor_trajectory):
+    """
+    trial_cursor_trajectory[numpy.array]: of n_time by n_coordinates
+    returns arc length
+    """
+    
+    trial_cursor_diff = np.diff(trial_cursor_trajectory, axis = 0)
+    trial_cursor_arc = np.linalg.norm(trial_cursor_diff, axis = 1)
+    trial_arc_length = np.sum(trial_cursor_arc)
+    
+    return trial_arc_length
+
+
+def calc_event_rate_from_state_log(state_log, event_name, window_length = 60,FRAME_RATE = 60):
+    '''
+    a wrapper function to calc event rate
+    '''
+
+    event_record = generate_event_array(state_log, event_name, FRAME_RATE = FRAME_RATE)
+
+    return calc_event_rate(event_record, window_length = window_length, FS = FRAME_RATE)
+
+
+def generate_event_array(state_log, event_name, FRAME_RATE = 60):
+    '''
+    given a state log, generate an array in which the corresponding time point has a value of one.
+    args:
+        state_log(list): a list of tuples of (state_name:str, time:float)
+    returns:
+        event_log(np.array):
+    '''
+
+    #get the last experiment time
+    exp_time = state_log[-1][1]
+
+    total_num_frames = np.int64(exp_time * FRAME_RATE)
+    event_record = np.zeros(total_num_frames)
+    #proc state log
+    #each state has a ('state', time in float)
+    event_trial_time = [s[1] for s in state_log if s[0] == event_name]
+    event_trial_frame = np.array(event_trial_time) * FRAME_RATE
+    event_trial_frame = np.array(event_trial_frame, dtype = np.int)
+    
+    event_record[event_trial_frame] = 1
+    
+    return event_record
+
+def calc_event_rate(event_record, window_length = 60, FS = 60):
+    """
+    reward_record; a state log containing succuss trials. 
+    sorted_trials_in_a_list
+    window_length[s]: default to 1 min
+    """
+
+    num_frames = len(event_record)
+    #get number of frames
+    window_length_in_frames = window_length *  FS
+
+    #then we can reshape
+    quotient  = num_frames % window_length_in_frames 
+    completed_window_length = num_frames - quotient
+    event_vec = event_record[:completed_window_length]
+
+    #folded into the windows  and count how many trials
+    event_vec_folded = event_vec.reshape((-1, window_length_in_frames))
+    succuss_rate = np.sum(event_vec_folded, axis = 1) 
+
+    return succuss_rate 

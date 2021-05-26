@@ -1,0 +1,82 @@
+import numpy as np 
+
+class ConvergenceAnalyzer():
+    def __init__(self, optimal_thetas = None):
+        '''
+        setup the analyzer
+        INPUTS:
+            optimal_values: 1D numpy array
+        '''
+        #make sure the optimal values has a dim of 1
+        if optimal_thetas is not None:
+            assert optimal_thetas.ndim == 1
+
+        self.optimal_thetas = optimal_thetas
+        self.n_var = self.optimal_thetas.size
+
+    @classmethod
+    def calc_mse_along_rows(cls, thetas, optimal_thetas):
+        '''
+        assume thetas is 3D
+        '''
+        cls.check_remaining_axes_match(thetas, optimal_thetas)
+
+        n_time = thetas.shape[0]
+
+        mses = np.empty(n_time)
+
+        for i in range(n_time):
+            theta_slice = thetas[i,:,:]
+            mses[i] = cls.calc_mse_wz_theta_and_optimal(theta_slice, optimal_thetas)
+
+        return mses
+
+
+    @classmethod
+    def calc_mse_wz_theta_and_optimal(cls, thetas, optimal_thetas):
+        '''
+        
+        '''
+
+        return np.linalg.norm(thetas - optimal_thetas) / np.linalg.norm(optimal_thetas)
+
+    @classmethod
+    def check_remaining_axes_match(cls,A,B):
+        assert A.shape[1:] == B.shape
+
+
+from scipy.optimize import curve_fit
+
+class ExpFitAnalyzer():
+    def __init__(self):
+        self.fitted_flag = False
+
+    def calc_fitting_params(self, f, x_data, y_data):
+        fitting_params, fitting_cov = curve_fit(f = f, xdata = x_data, ydata = y_data)
+
+        self.fitted_flag = True
+
+        #record the thing for other analyses
+        self.f = f
+        self.fitting_params = fitting_params
+        self.x_data = np.copy(x_data)
+        self.y_data = y_data
+        
+                                
+        return (self.fitting_params,fitting_cov)
+
+    def  calc_estimated_y(self):
+        if not self.fitted_flag: raise Exception('not fitted yet!')
+
+        self.est_y = self.f(self.x_data, *self.fitting_params)
+        return self.est_y
+
+    def plot_fitting(self, ax, label_flag = True):
+        ax.plot(self.x_data, self.y_data)
+        ax.plot(self.x_data, self.est_y)
+        
+
+def calc_flipped_shifted_exponential(x, a,b):
+    return a*(1-np.exp(-b*x))
+
+    

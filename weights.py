@@ -29,6 +29,7 @@ def change_target_kalman_filter_with_a_C_mat(target_kf, C:np.matrix, Q:np.matrix
     
     #reassign
     target_kf.C = C
+    target_kf.Q = Q
     target_kf.C_xpose_Q_inv = C_xpose_Q_inv
     target_kf.C_xpose_Q_inv_C = C_xpose_Q_inv_C
     
