@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.shape_base import expand_dims
 from riglib.bmi.kfdecoder import KalmanFilter
 import statsmodels.api as sm
 
@@ -60,8 +61,8 @@ def calc_ssm_y_minus_x_beta(y:np.array,
     return np.sum((y - X @ beta)**2)
 
 
-def calc_a_history_of_matrix_L2norms_along_first_axis(kf_C_history: np.array, 
-                                    indices_to_sum:tuple, 
+def calc_a_history_of_matrix_L2norms_along_first_axis(kf_C_history: np.array,  target_C = None,
+                                    indices_to_sum:tuple = (3,5), 
                                     debug = False):
     """
     for each row,  calculate the L2 norm as specified by the indices_to_sum
@@ -76,16 +77,21 @@ def calc_a_history_of_matrix_L2norms_along_first_axis(kf_C_history: np.array,
     if debug: 
         print(f'input matrix shape {kf_C_history.shape}')
         print(kf_C_history)
+        print(target_C)
         print()
 
-    kf_C_history = kf_C_history[:, :,indices_to_sum]
+    if target_C is None:
+        target_C = np.copy(kf_C_history[0,:,:])
+        print(target_C.shape)
+
 
     history_of_L2norms = list()
 
     for ii in range(N_TIME_POINTS):
-        extract_matrix = kf_C_history[ii,:,:]
+        extract_matrix = kf_C_history[ii,:,:] - target_C
 
-        
+        extract_matrix = extract_matrix[:, indices_to_sum]
+
         history_of_L2norms.append(
             calc_matrix_L2norm_along_first_dimension(extract_matrix)
         )

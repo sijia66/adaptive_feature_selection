@@ -127,6 +127,29 @@ def calc_inter_trial_times(trial_log: list)-> list:
     return np.array(wait_log_with_diff[:-1])
 
 
+def calc_arc_length_from_trial_dict(trial_dict):
+     arc_length = [calc_arc_length(sample_trial['cursor']) for sample_trial in trial_dict]
+     return np.array(arc_length)
+
+def calc_arc_length_from_cursor(cursor_data, window = 10, frame_rate = 60):
+
+    cursor_data = np.squeeze(cursor_data)
+
+    num_time, num_coor = cursor_data.shape
+
+    block_size = window * frame_rate
+    num_block = int(num_time / block_size)
+
+    arc_length_in_blocks =  np.empty(num_block)
+
+    for i in range(num_block):
+
+        time_ind = range(i * block_size, (i+1) * block_size)
+        arc_length_in_blocks[i] = calc_arc_length(cursor_data[time_ind, :])
+
+    return arc_length_in_blocks
+
+
 def calc_arc_length(trial_cursor_trajectory):
     """
     trial_cursor_trajectory[numpy.array]: of n_time by n_coordinates
@@ -140,17 +163,17 @@ def calc_arc_length(trial_cursor_trajectory):
     return trial_arc_length
 
 
-def calc_event_rate_from_state_log(state_log, event_name, window_length = 60,FRAME_RATE = 60):
+def calc_event_rate_from_state_log(state_log, event_name, window_length = 60,FRAME_RATE = 60, **kwargs):
     '''
     a wrapper function to calc event rate
     '''
 
-    event_record = generate_event_array(state_log, event_name, FRAME_RATE = FRAME_RATE)
+    event_record = generate_event_array(state_log, event_name, FRAME_RATE = FRAME_RATE, **kwargs)
 
     return calc_event_rate(event_record, window_length = window_length, FS = FRAME_RATE)
 
 
-def generate_event_array(state_log, event_name, FRAME_RATE = 60):
+def generate_event_array(state_log, event_name, total_time = None, FRAME_RATE = 60):
     '''
     given a state log, generate an array in which the corresponding time point has a value of one.
     args:
@@ -159,10 +182,17 @@ def generate_event_array(state_log, event_name, FRAME_RATE = 60):
         event_log(np.array):
     '''
 
-    #get the last experiment time
-    exp_time = state_log[-1][1]
 
+
+    if total_time is None:
+            #get the last experiment time
+        exp_time = state_log[-1][1]
+    else:
+        exp_time = total_time
+    
     total_num_frames = np.int64(exp_time * FRAME_RATE)
+
+    
     event_record = np.zeros(total_num_frames)
     #proc state log
     #each state has a ('state', time in float)

@@ -43,3 +43,68 @@ def plot_prefered_directions(C:np.array, plot_states:tuple = (X_VEL_STATE_IND,Y_
         ax.plot([0, C[k, x]], [0, C[k, z]], 
                 linestyle=linestyles[int(k/7) % len(linestyles)], 
                 **kwargs)
+
+def add_center_out_grid(ax, target_seq, radius,circle_alpha = 0.2,range_lim = 15):
+
+    target_origins =  np.unique(target_seq, axis = 0)
+
+    ax.set_xlim(-range_lim, range_lim)
+    ax.set_ylim(-range_lim, range_lim)
+    
+    add_circular_origin(ax, radius)
+    add_targets(ax, target_origins, radius, circle_alpha = circle_alpha)
+
+def plot_trial_trajectory(ax, cursor_trajectory):
+    X_CURSOR_INDEX = 0
+    Z_CURSOR_INDEX = 2
+    ax.plot(cursor_trajectory[:, X_CURSOR_INDEX], 
+             cursor_trajectory[:, Z_CURSOR_INDEX])
+    
+
+def add_circular_origin(ax, radius):
+    add_circle_to_ax(ax, (0,0), radius)
+
+def add_targets(ax, targets_origins, radius, circle_alpha = 0.2):
+
+    X_CURSOR = 0
+    Z_CURSOR = 2
+    #plot the targets
+    for origin_t in targets_origins:
+        origin = origin_t[0]
+        t = origin_t[1]
+
+        cc = plt.Circle((t[X_CURSOR],t[Z_CURSOR] ), 
+                        radius = radius,
+                        alpha = circle_alpha)
+
+        ax.set_aspect( 1 ) 
+        ax.add_artist( cc ) 
+
+
+def add_circle_to_ax(ax, origin, radius, circle_alpha = 0.2):
+    '''
+    plot a circle with origin (np.array)
+
+    args:
+        origin
+        radius
+    '''
+    
+    cc = plt.Circle(origin, 
+                radius = radius,
+                alpha = circle_alpha)
+
+    ax.add_artist( cc ) 
+
+import matplotlib as mpl
+
+def get_cmap(n_lines, color = None):
+
+    if color is None:
+        color = mpl.cm.Blues
+    c = np.arange(1, n_lines + 1)
+    norm = mpl.colors.Normalize(vmin=c.min(), vmax=c.max())
+    cmap = mpl.cm.ScalarMappable(norm=norm, cmap=color)
+    cmap.set_array([])
+
+    return cmap
