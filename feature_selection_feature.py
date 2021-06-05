@@ -234,8 +234,9 @@ class FeatureSelector():
         self.used_C_mat[self._active_feat_set,: ] = np.copy(target_decoder.filt.C)
         self._used_K_mat_list.append(np.copy(target_decoder.filt.K))
         self._used_C_mat_list.append(np.copy(self.used_C_mat))
-
-        self._used_Q_diag_list.append(np.copy(target_decoder.filt.Q))
+        
+        self.used_Q_diag[self._active_feat_set] = np.diag(np.copy(target_decoder.filt.Q))
+        self._used_Q_diag_list.append(np.copy(self.used_Q_diag))
 
     def add_new_features(self, target_decoder, num_add_feat):
         '''
@@ -405,6 +406,39 @@ class IterativeFeatureSelector(FeatureSelector):
        self.decoder_change_flag = True
        self.feature_change_flag = True
 
+
+class IterativeFeatureRemoval(FeatureSelector):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        #TODO make this dynamic changeable
+        self._change_at_batch = 50
+        self._target_active_set = kwargs['target_feature_set']
+        self._feature_changed = False
+
+    def measure_features(self, feature_matrix, target_matrix):
+        '''
+        feature_matrix[np.array]: n_time_points by n_features
+        target_matrix[np.array]: n_time_points by n_target fitting vars
+        '''
+        self.feature_measure_count += 1
+
+        self.determine_change_features()
+
+    def determine_change_features(self):
+       
+       #assume we selected the first few features
+
+       if self.feature_measure_count <= self._change_at_batch:
+           return
+
+       if not self._feature_changed: 
+           self._active_feat_set = np.copy(self._target_active_set)
+
+           self.decoder_change_flag = True
+           self.feature_change_flag = True
+
+           self._feature_changed = True
 
 from sklearn.linear_model import Lasso
 
