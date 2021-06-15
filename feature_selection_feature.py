@@ -122,6 +122,7 @@ class FeatureSelector():
         #history of featrues
         self.used_C_mat = np.zeros((self.n_active_feats, self.n_states))
         self.used_Q_diag = np.zeros(self.n_active_feats)
+        self.used_K_mat = np.zeros((self.n_states, self.n_active_feats)) #this is flipped of course.
 
         print(f'feature selector: add initial decoder weights')
         self._used_C_mat_list = list()
@@ -232,11 +233,19 @@ class FeatureSelector():
     def record_feature_active_set(self, target_decoder):
         self._active_feat_set_list.append(np.copy(self._active_feat_set))
         self.used_C_mat[self._active_feat_set,: ] = np.copy(target_decoder.filt.C)
-        self._used_K_mat_list.append(np.copy(target_decoder.filt.K))
         self._used_C_mat_list.append(np.copy(self.used_C_mat))
-        
+
         self.used_Q_diag[self._active_feat_set] = np.diag(np.copy(target_decoder.filt.Q))
         self._used_Q_diag_list.append(np.copy(self.used_Q_diag))
+
+        #K matrix, a new k matrix needs to be calculated
+        if hasattr(target_decoder.filt.pred_state_P, 'shape'):
+            K = target_decoder.filt._calc_kalman_gain(target_decoder.filt.pred_state_P)
+        else:
+            K = np.nan
+        self.used_K_mat[:, self._active_feat_set] = np.copy(K)
+        self._used_K_mat_list.append(np.copy(self.used_K_mat))
+
 
     def add_new_features(self, target_decoder, num_add_feat):
         '''
@@ -500,7 +509,263 @@ class LassoFeatureSelector(FeatureSelector):
         return self.selected_feature_indices
 
 
+#make this into a loop
 
+
+
+def run_exp_loop(exp,  **kwargs):
+        # riglib.experiment: line 597 - 601
+    #exp.next_trial = next(exp.gen)
+    # -+exp._parse_next_trial()np.arraynp.array
+
+
+    # we need to set the initial state
+    # per fsm.run:  line 138
+
+
+    # Initialize the FSM before the loop
+    exp.set_state(exp.state)
+    
+    finished_trials = exp.calc_state_occurrences('wait')
+    print(f'finished: {finished_trials}')
+
+
+    while exp.state is not None:
+
+        # exp.fsm_tick()
+
+        ### Execute commands#####
+        exp.exec_state_specific_actions(exp.state)
+
+        ###run the bmi loop #####
+        # _cycle
+
+        # bmi feature extraction, eh
+        #riglib.bmi: 1202
+        feature_data = exp.get_features()
+
+        # Determine the target_state and save to file
+        current_assist_level = exp.get_current_assist_level()
+        target_state = exp.get_target_BMI_state(exp.decoder.states)
+
+        # Determine the assistive control inputs to the Decoder
+        #update assistive control level
+        exp.update_level()
+        if np.any(current_assist_level) > 0:
+            current_state = exp.get_current_state()
+
+            if target_state.shape[1] > 1:
+                assist_kwargs = exp.assister(current_state, 
+                                             target_state[:,0].reshape(-1,1), 
+                                             current_assist_level, mode= exp.state)
+            else:
+                assist_kwargs = exp.assister(current_state, 
+                                              target_state, 
+                                              current_assist_level, 
+                                              mode= exp.state)
+
+            kwargs.update(assist_kwargs)
+            
+        
+
+        # decode the new features
+        # riglib.bmi.bmiloop: line 1245
+        neural_features = feature_data[exp.extractor.feature_type]
+        
+        
+
+        # call decoder.
+        #tmp = exp.call_decoder(neural_features, target_state, **kwargs)
+        neural_obs = neural_features
+        learn_flag = exp.learn_flag
+        task_state = exp.state
+
+        n_units, n_obs = neural_obs.shape
+        # If the target is specified as a 1D position, tile to match
+        # the number of dimensions as the neural features
+        if np.ndim(target_state) == 1 or (target_state.shape[1] == 1 and n_obs > 1):
+            target_state = np.tile(target_state, [1, n_obs])
+
+        decoded_states = np.zeros([exp.bmi_system.decoder.n_states, n_obs])
+        update_flag = False
+
+        for k in range(n_obs):
+            neural_obs_k = neural_obs[:, k].reshape(-1, 1)
+            target_state_k = target_state[:, k]
+
+            # NOTE: the conditional below is *only* for compatibility with older Carmena
+            # lab data collected using a different MATLAB-based system. In all python cases,
+            # the task_state should never contain NaN values.
+            if np.any(np.isnan(target_state_k)):
+                task_state = 'no_target'
+
+            #################################
+            # Decode the current observation
+            #################################
+            unselected_decodable_obs, decode = exp.bmi_system.feature_accumulator(
+                neural_obs_k)
+            
+            if exp.is_feature_change():
+                #take care of the decoder selection stuff             
+                
+                decodable_obs = exp.select_features(unselected_decodable_obs)
+            else:
+                decodable_obs = unselected_decodable_obs.copy()
+            
+            if decode:  # if a new decodable observation is available from the feature accumulator
+                prev_state = exp.bmi_system.decoder.get_state()
+
+                exp.bmi_system.decoder(decodable_obs, **kwargs)
+                # Determine whether the current state or previous state should be given to the learner
+                if exp.bmi_system.learner.input_state_index == 0:
+                    learner_state = exp.bmi_system.decoder.get_state()
+                elif exp.bmi_system.learner.input_state_index == -1:
+                    learner_state = prev_state
+                else:
+                    print(("Not implemented yet: %d" %
+                           exp.bmi_system.learner.input_state_index))
+                    learner_state = prev_state
+
+                if learn_flag:
+                    exp.bmi_system.learner(unselected_decodable_obs.copy(), learner_state, target_state_k, exp.bmi_system.decoder.get_state(
+                    ), task_state, state_order=exp.bmi_system.decoder.ssm.state_order)
+
+            decoded_states[:, k] = exp.bmi_system.decoder.get_state()
+
+            ############################
+            # Update decoder parameters
+            ############################
+            if exp.bmi_system.learner.is_ready():
+                batch_data = exp.bmi_system.learner.get_batch()
+                batch_data['decoder'] = exp.bmi_system.decoder
+                
+                #for feature selection
+                unselected_batch = np.copy(batch_data['spike_counts'])
+                selected_batch = np.copy(unselected_batch[exp._active_feat_set,:])
+                batch_data['spike_counts'] = selected_batch.copy()
+                
+                kwargs.update(batch_data)
+                exp.bmi_system.updater(**kwargs)
+                exp.bmi_system.learner.disable()
+                
+                #measure features. 
+                if isinstance(exp, FeatureSelector):
+                    exp.measure_features(unselected_batch,
+                                       batch_data['intended_kin'])
+                
+
+            new_params = None  # by default, no new parameters are available
+            if exp.bmi_system.has_updater:
+                new_params = copy.deepcopy(exp.bmi_system.updater.get_result())
+
+            # Update the decoder if new parameters are available
+            if not (new_params is None):
+                exp.bmi_system.decoder.update_params(
+                    new_params, **exp.bmi_system.updater.update_kwargs)
+                new_params['intended_kin'] = batch_data['intended_kin']
+                new_params['spike_counts_batch'] = batch_data['spike_counts']
+
+                exp.bmi_system.learner.enable()
+                update_flag = True
+
+                # Save new parameters to parameter history
+                exp.bmi_system.param_hist.append(new_params)
+                
+                #take care of the decoder selection stuff
+                if exp.is_decoder_change():
+                    #only select the first four neurons
+                    print(f'decoder changes here at {exp.cycle_count}')
+                    exp.select_decoder_features(exp.decoder, debug = True)
+                
+                #record the current feature active set
+                exp.record_feature_active_set(exp.decoder)
+
+
+        # saved as task data
+        # return decoded_states, update_flag
+        tmp = decoded_states
+        exp.task_data['internal_decoder_state'] = tmp
+
+        # reset the plant position
+        # @riglib.bmi.BMILoop.move_plant  line:1254
+        exp.plant.drive(exp.decoder)
+
+        # check state transitions and run the FSM.
+        current_state = exp.state
+
+        # iterate over the possible events which could move the task out of the current state
+        for event in exp.status[current_state]:
+            # if the event has occurred
+            if exp.test_state_transition_event(event):
+                # execute commands to end the current state
+                exp.end_state(current_state)
+
+                # trigger the transition for the event
+                exp.trigger_event(event)
+
+                # stop searching for transition events (transition events must be
+                # mutually exclusive for this FSM to function properly)
+                break
+
+        # sort out the loop params.
+        # inc cycle count
+        exp.cycle_count += 1
+
+        # save target data as was done in manualControlTasks._cycle
+        exp.task_data['target'] = exp.target_location.copy()
+        exp.task_data['target_index'] = exp.target_index
+
+        #done in bmi:_cycle after move_plant
+        exp.task_data['loop_time'] = exp.iter_time()
+
+
+        #fb_controller data
+        exp.task_data['target_state'] = target_state
+
+        #encoder data
+        #input to this is actually extractor
+        exp.task_data['ctrl_input'] = np.reshape(exp.extractor.sim_ctrl, (1,-1))
+
+        #actually output
+        exp.task_data['spike_counts'] = feature_data['spike_counts']
+        exp.k_mat_params.append(np.copy(exp.decoder.filt.K))
+
+
+        #save the decoder_state
+        #from BMILoop.move_plant
+        exp.task_data['decoder_state'] = exp.decoder.get_state(shape=(-1,1))
+        
+        #save bmi_data
+        exp.task_data['update_bmi'] = update_flag
+
+
+        # as well as plant data.
+        plant_data = exp.plant.get_data_to_save()
+        for key in plant_data:
+            exp.task_data[key] = plant_data[key]
+
+        # clda data handled in the above call.
+
+        # save to the list hisory of data.
+        exp.task_data_hist.append(exp.task_data.copy())
+        
+        #deal with the task count_down features
+        
+        if hasattr(exp, 'TOTAL_RUNNNING_TIME'):
+            if exp.cycle_count == exp.total_frames:
+                exp.state = None
+                print('exit')
+        
+        #print out the trial update whenever wait count changes, alright. 
+        if finished_trials != exp.calc_state_occurrences('wait'):
+            finished_trials = exp.calc_state_occurrences('wait')
+            #print(f'finished trials :{finished_trials} with a current assist level of {exp.get_current_assist_level()}')
+
+
+    if exp.verbose:
+        print("end of FSM.run, task state is", exp.state)
+    
+    
 
 class FeatureAdapter():
     '''
