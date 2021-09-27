@@ -1,10 +1,30 @@
+from ast import Num
 import numpy as np
 from numpy.lib.function_base import _select_dispatcher
 from sklearn.linear_model import Lasso
 
+from features import SaveHDF
+
 from weights import change_target_kalman_filter_with_a_C_mat
 #import 
 from icecream import ic
+
+import copy
+import time #for sync stuff c
+
+FRAME_RATE = 60
+
+# some conventions as we go down the loop
+X_VEL_STATE_IND = 3
+Y_VEL_STATE_IND = 5
+X_POS_STATE_IND = 0
+Y_POS_STATE_IND = 2
+
+state_indices = [X_POS_STATE_IND,
+                 Y_POS_STATE_IND,
+                 X_VEL_STATE_IND,
+                 Y_VEL_STATE_IND]
+state_names = ['x pos ', 'y pos', 'x vel', 'y vel']
 
 
 class FeatureTransformer():
@@ -416,6 +436,159 @@ class IterativeFeatureSelector(FeatureSelector):
        self.feature_change_flag = True
 
 
+
+class ReliabilityFeatureSelector(FeatureSelector):
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.Q_diag_list = list()
+        self._change_one_flag = True
+        self.reliability_record = list()
+
+    def measure_features(self, feature_matrix, target_matrix):
+        '''
+        feature_matrix[np.array]: n_time_points by n_features
+        target_matrix[np.array]: n_time_points by n_target fitting vars
+        '''
+        self.feature_measure_count += 1
+
+        (C_hat,Q_diag) = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
+
+        self.determine_change_features()
+
+
+
+    def determine_change_features(self):
+
+        num_pre_est_pt = 3
+        if self.feature_measure_count <= num_pre_est_pt:
+            return 
+        else:
+            
+            try: 
+                q_diag_list = np.array(self._used_Q_diag_list)
+                q_diag_list_last = q_diag_list[-1,:]
+                C_mat = np.array(self._used_C_mat_list[-1])
+
+                C_mat_norm  = np.linalg.norm(C_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)], axis = 1)
+
+                r_measure = C_mat_norm / q_diag_list_last
+
+                print(r_measure)
+
+                self.selected_feature_indices = self.threshold_features(r_measure, 75)
+
+                # set the active feature set to True
+                temp_active_set = np.full(self.N_TOTAL_AVAIL_FEATS, False)
+                temp_active_set[self.selected_feature_indices] = True
+
+                self._active_feat_set = temp_active_set
+
+                
+                self.decoder_change_flag = True
+                self.feature_change_flag = True
+            except:
+                print(f'we have a problem with the noisy: {self.selected_feature_indices}')
+
+                self.decoder_change_flag = False
+                self.feature_change_flag = False
+
+
+            return
+        
+        '''
+        elif self.feature_measure_count < train_high_SNR_time:
+            #if nothing else just returns sort of thing. 
+            return
+
+        
+        N_high_SNR = 8
+        feature_change_index_time = self.feature_measure_count - train_high_SNR_time
+        selected_index = N_high_SNR + feature_change_index_time
+
+        if selected_index > self.N_TOTAL_AVAIL_FEATS: return
+
+        self._active_feat_set[:selected_index] = True
+
+        self.decoder_change_flag = True
+        self.feature_change_flag = True
+
+        print(f'determine feature change: after set up {self._active_feat_set}')
+        '''
+        
+    def measure_neurons_wz_intendedkin_and_spike(self, intended_kin, spike_counts):
+        '''
+        calculate the y-CX covariance matrix
+        and then select the top 25 percentile features
+        '''
+
+        C_hat, Q_hat = kfdecoder.KalmanFilter.MLE_obs_model(intended_kin, spike_counts, include_offset=False)
+        Q_diag = np.diag(Q_hat)
+        self.Q_diag_list.append(Q_diag)
+        self._used_C_mat_list.append(C_hat)
+
+        return (C_hat, Q_diag)
+
+    def threshold_features(self, Q_diag, per):
+        Q_per = np.percentile(Q_diag,  per)
+        return np.argwhere(Q_diag >= Q_per)
+
+class SmoothReliabilityFeatureSelector(ReliabilityFeatureSelector):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.reliability_record = np.zeros(self.N_TOTAL_AVAIL_FEATS)
+
+    def determine_change_features(self):
+
+        num_pre_est_pt = 3
+        if self.feature_measure_count <= num_pre_est_pt:
+            return 
+        else:
+            
+            try: 
+                q_diag_list = np.array(self._used_Q_diag_list)
+                q_diag_list_last = q_diag_list[-1,:]
+                C_mat = np.array(self._used_C_mat_list[-1])
+
+                C_mat_norm  = np.linalg.norm(C_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)], axis = 1)
+
+                r_measure = C_mat_norm / q_diag_list_last
+
+                print(r_measure)
+
+                self.selected_feature_indices = self.threshold_features(r_measure, 75)
+
+                #increment the count of number of times.
+                self.reliability_record[self.selected_feature_indices] = self.reliability_record[self.selected_feature_indices] + 1
+
+                #get the N largest elements
+                selected_ind = self.reliability_record.argsort()[-8:] #TODO,  magical number 8 is expected 8 most informative features
+
+
+                # set the active feature set to True
+                temp_active_set = np.full(self.N_TOTAL_AVAIL_FEATS, False)
+                #TODO change this magical number to whatever number of features we'd like to use.
+                
+                temp_active_set[selected_ind] = True
+
+                self._active_feat_set = temp_active_set
+
+                
+                self.decoder_change_flag = True
+                self.feature_change_flag = True
+            except:
+                print(f'we have a problem with the noisy: {self.selected_feature_indices}')
+
+                self.decoder_change_flag = False
+                self.feature_change_flag = False
+
+
+            return
+
+
+
 class IterativeFeatureRemoval(FeatureSelector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -511,8 +684,8 @@ class LassoFeatureSelector(FeatureSelector):
 
 #make this into a loop
 
-
-
+    
+    
 def run_exp_loop(exp,  **kwargs):
         # riglib.experiment: line 597 - 601
     #exp.next_trial = next(exp.gen)
@@ -529,8 +702,14 @@ def run_exp_loop(exp,  **kwargs):
     finished_trials = exp.calc_state_occurrences('wait')
     print(f'finished: {finished_trials}')
 
+    # Mark the beginning and end of the experiment
+    exp.sync_event('EXP_START')
+
 
     while exp.state is not None:
+
+                # inc cycle count
+        exp.cycle_count += 1
 
         # exp.fsm_tick()
 
@@ -707,9 +886,7 @@ def run_exp_loop(exp,  **kwargs):
                 # mutually exclusive for this FSM to function properly)
                 break
 
-        # sort out the loop params.
-        # inc cycle count
-        exp.cycle_count += 1
+
 
         # save target data as was done in manualControlTasks._cycle
         exp.task_data['target'] = exp.target_location.copy()
@@ -739,6 +916,7 @@ def run_exp_loop(exp,  **kwargs):
         exp.task_data['update_bmi'] = update_flag
 
 
+
         # as well as plant data.
         plant_data = exp.plant.get_data_to_save()
         for key in plant_data:
@@ -749,23 +927,44 @@ def run_exp_loop(exp,  **kwargs):
         # save to the list hisory of data.
         exp.task_data_hist.append(exp.task_data.copy())
         
-        #deal with the task count_down features
+
         
+        #if exp is a submember of saveHDF, then save to it. 
+        if isinstance(exp, SaveHDF):
+
+            # Send task data to any registered sinks
+            if exp.task_data is not None: exp.sinks.send("task", exp.task_data)
+
+            #Send sync events
+            if exp.sync_every_cycle:
+                code = 1 << exp.sync_params['screen_sync_nidaq_pin']
+            if exp.has_sync_event:
+                exp.sinks.send("sync_events", exp.sync_event_record)
+                code |= int(exp.sync_event_record['code'])
+                exp.has_sync_event = False
+            if exp.sync_every_cycle:
+                exp.sync_clock_record['time'] = exp.cycle_count
+                exp.sync_clock_record['timestamp'] = time.perf_counter() - exp.t0
+                exp.sync_clock_record['prev_tick'] = exp.clock.get_time()
+                exp.sinks.send("sync_clock", exp.sync_clock_record)
+
+        #deal with the task count_down features
         if hasattr(exp, 'TOTAL_RUNNNING_TIME'):
             if exp.cycle_count == exp.total_frames:
+
+                print(f'finish  at cycle_count: {exp.cycle_count}')
+                exp.sync_event('EXP_END', event_data=0, immediate=True) # Signal the end of the experiment, even if it crashed
+
+                print(exp.calc_trial_num())
                 exp.state = None
                 print('exit')
+
+                # sort out the loop params.
+
         
-        #print out the trial update whenever wait count changes, alright. 
-        if finished_trials != exp.calc_state_occurrences('wait'):
-            finished_trials = exp.calc_state_occurrences('wait')
-            #print(f'finished trials :{finished_trials} with a current assist level of {exp.get_current_assist_level()}')
-
-
     if exp.verbose:
         print("end of FSM.run, task state is", exp.state)
-    
-    
+
 
 class FeatureAdapter():
     '''

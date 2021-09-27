@@ -163,17 +163,23 @@ def calc_arc_length(trial_cursor_trajectory):
     return trial_arc_length
 
 
-def calc_event_rate_from_state_log(state_log, event_name, window_length = 60,FRAME_RATE = 60, **kwargs):
+def calc_event_rate_from_state_log(state_log, event_name, window_length_in_frames = 60,FRAME_RATE = 60, **kwargs):
     '''
     a wrapper function to calc event rate
     '''
+    window_length = window_length_in_frames / FRAME_RATE
 
     event_record = generate_event_array(state_log, event_name, FRAME_RATE = FRAME_RATE, **kwargs)
 
     return calc_event_rate(event_record, window_length = window_length, FS = FRAME_RATE)
 
+def calc_moving_event_rate(state_log, event_name, window_length, FRAME_RATE = 60, **kwargs):
+    event_record = generate_event_array(state_log, event_name, FRAME_RATE = FRAME_RATE, **kwargs)
 
-def generate_event_array(state_log, event_name, total_time = None, FRAME_RATE = 60):
+    return moving_sum(event_record, FRAME_RATE * window_length)
+
+
+def generate_event_array(state_log, event_name, total_time = None, FRAME_RATE = 60, **kwargs):
     '''
     given a state log, generate an array in which the corresponding time point has a value of one.
     args:
@@ -181,23 +187,20 @@ def generate_event_array(state_log, event_name, total_time = None, FRAME_RATE = 
     returns:
         event_log(np.array):
     '''
-
-
-
     if total_time is None:
             #get the last experiment time
         exp_time = state_log[-1][1]
     else:
         exp_time = total_time
     
-    total_num_frames = np.int64(exp_time * FRAME_RATE)
+    total_num_frames = exp_time
 
     
     event_record = np.zeros(total_num_frames)
     #proc state log
     #each state has a ('state', time in float)
     event_trial_time = [s[1] for s in state_log if s[0] == event_name]
-    event_trial_frame = np.array(event_trial_time) * FRAME_RATE
+    event_trial_frame = np.array(event_trial_time)
     event_trial_frame = np.array(event_trial_frame, dtype = np.int)
     
     event_record[event_trial_frame] = 1
@@ -213,15 +216,24 @@ def calc_event_rate(event_record, window_length = 60, FS = 60):
 
     num_frames = len(event_record)
     #get number of frames
-    window_length_in_frames = window_length *  FS
+    window_length_in_frames = int(window_length *  FS)
 
     #then we can reshape
     quotient  = num_frames % window_length_in_frames 
-    completed_window_length = num_frames - quotient
+    completed_window_length = int(num_frames - quotient)
     event_vec = event_record[:completed_window_length]
 
     #folded into the windows  and count how many trials
     event_vec_folded = event_vec.reshape((-1, window_length_in_frames))
     event_rate = np.sum(event_vec_folded, axis = 1) 
 
+
+
     return event_rate 
+
+
+def moving_sum(x, w):
+    return np.convolve(x, np.ones(w), 'valid')
+
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w

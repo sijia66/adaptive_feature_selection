@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+#define constants
+GLOBAL_FIGURE_VERTICAL_SIZE = 4
+
 
 #useful ultility function copiee and  
 X_VEL_STATE_IND = 3
