@@ -59,7 +59,7 @@ def calc_cosine_to_target_matrix(matrix_series, target_mat = None, **kwargs):
     for i in range(num_time):
         mat_A = matrix_series[i,:,:]
         mat_B = target_mat
-        angles = calc_cosine_sim_bet_two_matrices(mat_A, mat_B)
+        angles = calc_cosine_sim_bet_two_matrices(mat_A, mat_B, **kwargs)
 
         angle_hist.append(angles)
 

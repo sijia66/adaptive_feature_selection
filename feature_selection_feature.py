@@ -348,7 +348,6 @@ class SNRFeatureSelector(FeatureSelector):
 
         self.Q_diag_list = list()
         self._change_one_flag = True
-
     def measure_features(self, feature_matrix, target_matrix):
         '''
         feature_matrix[np.array]: n_time_points by n_features
@@ -421,6 +420,13 @@ class SNRFeatureSelector(FeatureSelector):
 
 class IterativeFeatureSelector(FeatureSelector):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
+        #TODO: assume the first N number of neurons are high SNR 
+        self.N_HIGH_SNR = np.sum(self._active_feat_set)
+
     def measure_features(self, feature_matrix, target_matrix):
         '''
         feature_matrix[np.array]: n_time_points by n_features
@@ -434,21 +440,19 @@ class IterativeFeatureSelector(FeatureSelector):
        
        #assume we selected the first few features.
 
-       train_high_SNR_time = 60
+       train_high_SNR_time = self.train_high_SNR_time
 
        if self.feature_measure_count <= train_high_SNR_time:
            return
 
-
-       N_high_SNR = 8
        feature_change_index_time = self.feature_measure_count - train_high_SNR_time
-       selected_index = self.N_TOTAL_AVAIL_FEATS - N_high_SNR - feature_change_index_time
+       selected_index = self.N_HIGH_SNR + feature_change_index_time
 
-       if selected_index < 0: return
+       if selected_index > self.N_TOTAL_AVAIL_FEATS: return True
 
        selected_index = np.max(selected_index, 0)
 
-       self._active_feat_set[selected_index:] = True
+       self._active_feat_set[:selected_index] = True
 
        self.decoder_change_flag = True
        self.feature_change_flag = True
@@ -479,7 +483,7 @@ class ReliabilityFeatureSelector(FeatureSelector):
 
     def determine_change_features(self):
 
-        num_pre_est_pt = 3
+        num_pre_est_pt = 60
         if self.feature_measure_count <= num_pre_est_pt:
             return 
         else:
@@ -872,7 +876,7 @@ def run_exp_loop(exp,  **kwargs):
                 if exp.is_decoder_change():
                     #only select the first four neurons
                     print(f'decoder changes here at {exp.cycle_count}')
-                    exp.select_decoder_features(exp.decoder, debug = True)
+                    exp.select_decoder_features(exp.decoder, debug = False)
                 
                 #record the current feature active set
                 exp.record_feature_active_set(exp.decoder)
