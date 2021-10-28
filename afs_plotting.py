@@ -8,7 +8,7 @@ GLOBAL_FIGURE_VERTICAL_SIZE = 4
 #useful ultility function copiee and  
 X_VEL_STATE_IND = 3
 Y_VEL_STATE_IND = 5
-def plot_prefered_directions(C:np.array, plot_states:tuple = (X_VEL_STATE_IND,Y_VEL_STATE_IND),
+def plot_prefered_directions(C:np.ndarray, plot_states:tuple = (X_VEL_STATE_IND,Y_VEL_STATE_IND),
             ax=None, 
             invert=False, **kwargs):
     '''
