@@ -10,19 +10,15 @@
 
 
 from numpy import random
-import numpy
+import numpy as np
 
 
 def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
+                           percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/neurons_128/run_3/',
                            random_seed = 0):
 
-
-
-
-    import numpy as np
-
-    percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2)
+   
     #percent_high_SNR_noises[-1] = 0
     num_noises = len(percent_high_SNR_noises)
 
@@ -83,8 +79,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
         percent_of_count_in_a_list.append(percent_of_count)
 
 
-
-    np.set_printoptions(precision = 2)
     #for comparision
     #for comparision
     exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
@@ -126,11 +120,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     from riglib.stereo_opengl.window import FakeWindow
     from riglib.bmi import train
 
-
-    from behaviour_metrics import  filter_state, sort_trials
-
-    from weights import calc_p_values_for_spike_batches_use_intended_kin
-    from weights import calc_single_batch_p_values_by_fitting_kinematics_to_spike_counts
     import weights
 
     import time
