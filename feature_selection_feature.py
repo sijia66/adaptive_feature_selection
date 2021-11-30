@@ -260,6 +260,7 @@ class FeatureSelector():
 
         #K matrix, a new k matrix needs to be calculated
         if hasattr(target_decoder.filt.pred_state_P, 'shape'):
+
             K = target_decoder.filt._calc_kalman_gain(target_decoder.filt.pred_state_P)
         else:
             K = np.nan
@@ -722,7 +723,6 @@ def run_exp_loop(exp,  **kwargs):
     exp.set_state(exp.state)
     
     finished_trials = exp.calc_state_occurrences('wait')
-    print(f'finished: {finished_trials}')
 
     # Mark the beginning and end of the experiment
     exp.sync_event('EXP_START')
@@ -936,6 +936,10 @@ def run_exp_loop(exp,  **kwargs):
         
         #save bmi_data
         exp.task_data['update_bmi'] = update_flag
+
+        #actually saving the state mean and state covariances
+        exp.task_data['pred_state_P'] = exp.decoder.filt.pred_state_P
+        exp.task_data['post_state_P'] = exp.decoder.filt.post_state_P
 
 
 
