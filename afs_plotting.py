@@ -46,6 +46,7 @@ def plot_prefered_directions(C:np.ndarray, plot_states:tuple = (X_VEL_STATE_IND,
         ax.plot([0, C[k, x]], [0, C[k, z]], 
                 linestyle=linestyles[int(k/7) % len(linestyles)], 
                 **kwargs)
+        ax.axis('equal')
 
 def add_center_out_grid(ax, target_seq, radius,circle_alpha = 0.2,range_lim = 15):
 
