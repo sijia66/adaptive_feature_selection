@@ -282,7 +282,7 @@ class FeatureSelector():
         #save to data dict
         #mk temporary directory 
         import tempfile
-        print(f'saving file name to {self.h5file.name}')
+        print(f'saving feature selection file name to {self.h5file.name}')
         aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True)
 
 
@@ -660,6 +660,7 @@ class LassoFeatureSelector(FeatureSelector):
         self.current_lasso = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs.keys() else self.DEFAULT_ALPHA
         self.max_iter = kwargs['max_iter'] if 'max_iter' in kwargs.keys() else self.DEFAULT_MAX_ITERATION
 
+        self._adaptive_lasso_flag = kwargs['adaptive_lasso_flag'] if 'adaptive_lasso_flag' in kwargs else False
         self._init_lasso_regression(self.current_lasso, 
                                    self.max_iter)
         
@@ -681,9 +682,17 @@ class LassoFeatureSelector(FeatureSelector):
         feature_matrix[np.array]: n_time_points by n_features
         target_matrix[np.array]: n_time_points by n_target fitting vars
         '''
+
+        if len(feature_matrix) != len(target_matrix):
+            feature_matrix = feature_matrix.T
+            target_matrix = target_matrix.T
+
+        # only select relevant features, in case the hand kinematics.
+        
+        target_states = [3,5] # 3 for x_vel and 5 for y_vel
         
         #fitted results to lasso_model._coef
-        self.lasso_model.fit(feature_matrix, target_matrix)
+        self.lasso_model.fit(feature_matrix, target_matrix[:, target_states])
         self.measure_ready = True
         
         #save to the history of measures
@@ -704,11 +713,22 @@ class LassoFeatureSelector(FeatureSelector):
     def get_selected_feature_indices(self):
         return self.selected_feature_indices
 
+    def save_feature_params(self):
+        import aopy
 
-#make this into a loop
+        #prepare data dict
 
-    
-    
+        data_dict = {
+            'lasso_hist': self.history_of_weights
+        }
+
+        #save to data dict
+        #mk temporary directory 
+        import tempfile
+        print(f'saving feature selection file name to {self.h5file.name}')
+        aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True)
+
+
 def run_exp_loop(exp,  **kwargs):
         # riglib.experiment: line 597 - 601
     #exp.next_trial = next(exp.gen)
@@ -916,7 +936,6 @@ def run_exp_loop(exp,  **kwargs):
 
         #done in bmi:_cycle after move_plant
         exp.task_data['loop_time'] = exp.iter_time()
-
 
         #fb_controller data
         exp.task_data['target_state'] = target_state
