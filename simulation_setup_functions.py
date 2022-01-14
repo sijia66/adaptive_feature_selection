@@ -1,6 +1,117 @@
 
 
 import numpy as np
+import scipy.stats as ss
+
+
+def get_enc_setup(sim_mode = 'two_gaussian_peaks', tuning_level = 1, n_neurons = 4, 
+                  bimodal_weight = [0.5, 0.5],
+                  norm_var = [50,  10], # sufficient statistics for the first gaussian peak,
+                  norm_var_2 = [100, 10], # similarly, sufficient stats for the 2nd gaussian peak.
+                  ):
+    '''
+    sim_mode:str 
+       std:  mn 20 neurons
+       'toy' # mn 4 neurons
+
+    tuning_level: float 
+        the tuning level at which a particular direction the firng rate is tuned
+        the higher the better
+    bimodal_weight: a weight of each of the peak
+    '''
+
+    print(f'{__name__}: get_enc_setup has a tuning_level of {tuning_level} \n')
+
+    if sim_mode == 'toy':
+        #by toy, w mn 4 neurons:
+            #first 2 ctrl x velo
+            #lst 2 ctrl y vel
+        # build a observer matrix
+        N_NEURONS = 4
+        N_STATES = 7  # 3 positions and 3 velocities and an offset
+        # build the observation matrix
+        sim_C = np.zeros((N_NEURONS, N_STATES))
+
+
+        # control x positive directions
+        sim_C[0, :] = np.array([0, 0, 0, tuning_level, 0, 0, 0])
+        sim_C[1, :] = np.array([0, 0, 0, -tuning_level, 0, 0, 0])
+        # control z positive directions
+        sim_C[2, :] = np.array([0, 0, 0, 0, 0, tuning_level, 0])
+        sim_C[3, :] = np.array([0, 0, 0, 0, 0, -tuning_level, 0])
+        
+
+    elif sim_mode ==  'std':
+        # build a observer matrix
+        N_NEURONS = 25
+        N_STATES = 7  # 3 positions and 3 velocities and an offset
+        # build the observation matrix
+        sim_C = np.zeros((N_NEURONS, N_STATES))
+        # control x positive directions
+        sim_C[0, :] = np.array([0, 0, 0, tuning_level, 0, 0, 0])
+        sim_C[1, :] = np.array([0, 0, 0, -tuning_level, 0, 0, 0])
+        # control z positive directions
+        sim_C[2, :] = np.array([0, 0, 0, 0, 0, tuning_level, 0])
+        sim_C[3, :] = np.array([0, 0, 0, 0, 0, -tuning_level, 0])
+
+    elif sim_mode == 'rot_90':
+        #the directions are along the four axes
+        N_NEURONS = n_neurons
+        N_STATES = 7
+        sim_C = _get_alternate_encoder_setup_matrix(N_NEURONS, N_STATES, tuning_level)
+
+    elif sim_mode == 'rand':
+        N_STATES = 7
+        sim_C = _get_rand_encoder_matrix(n_neurons,  N_STATES, tuning_level)
+    elif sim_mode == "two_gaussian_peaks":
+        feature_weights = generate_bimodal(n_neurons, bimodal_weight, 
+                                            norm_var[0], norm_var[1], 
+                                            norm_var_2[0], norm_var_2[1])
+        feature_weights.sort()[::-1]
+
+        sim_C = _get_rand_encoder_matrix(n_neurons, 7, feature_weights)
+    else:
+        raise Exception(f'not recognized mode {sim_mode}')
+    
+    return (n_neurons, N_STATES, sim_C)
+
+def _get_alternate_encoder_setup_matrix(N_NEURONS, N_STATES, tuning_level):
+    from itertools import cycle
+    axial_angle_iterator = cycle([0, np.pi / 2, np.pi, np.pi * 3 / 2])
+
+    X_VEL_IND = 3
+    Y_VEL_IND = 5
+
+    sim_C = np.zeros((N_NEURONS, N_STATES))
+    x_weights = np.zeros(N_NEURONS)
+    y_weights = np.zeros(N_NEURONS)
+
+    for i in range(N_NEURONS):
+        current_angle = next(axial_angle_iterator)
+        x_weights[i] = np.cos(current_angle) * tuning_level
+        y_weights[i] = np.sin(current_angle) * tuning_level
+
+    sim_C[:,X_VEL_IND] = x_weights
+    sim_C[:,Y_VEL_IND] = y_weights
+
+    return sim_C
+
+def _get_rand_encoder_matrix(n_neurons,  N_STATES, tuning_level):
+    #sample 2 pi:
+    prefered_angles_in_rad = np.random.uniform(low = 0, high = 2 * np.pi, size = n_neurons)
+
+    sim_C = np.zeros((n_neurons, N_STATES))
+
+    X_VEL_IND = 3
+    Y_VEL_IND = 5
+
+    #calculate the matrices
+    sim_C[:,X_VEL_IND] = np.cos(prefered_angles_in_rad) * tuning_level
+    sim_C[:,Y_VEL_IND] = np.sin(prefered_angles_in_rad) * tuning_level
+
+    return sim_C
+
+
 
 def generate_binary_feature_distribution(percent_high_SNR_noises, n_neurons, fraction_snr):
 
@@ -58,6 +169,35 @@ def generate_binary_feature_distribution(percent_high_SNR_noises, n_neurons, fra
     
     return (percent_of_count_in_a_list, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)
 
+
+def generate_bimodal(N, w, mu_1, var_1, mu_2, var_2, seed = 0, debug = True):
+  """
+  generate N samples that are distributed by the mixture density
+  w * Normal(mu_1, var_1) + (1-w) * Normal(mu_2, var_2)
+
+
+  """
+  # set the seed -> reproducible results
+  np.random.seed(seed)
+  if debug:
+      pass
+  
+  norm_params = np.array([[mu_1, var_1],
+                        [mu_2, var_2]])
+  
+  n_components = norm_params.shape[0]
+    
+  
+  weights = np.array(w) / sum(w)
+
+  # The indices are sampled by biasing the weights
+  mixture_idx = np.random.choice(len(weights), size=n, replace=True, p=weights)
+
+  # y is the mixture sample
+  y = np.fromiter((ss.norm.rvs(*(norm_params[i])) for i in mixture_idx),
+                    dtype=np.float64)
+  
+  return y
 
 def get_KF_C_Q_from_decoder(first_decoder):
     """
