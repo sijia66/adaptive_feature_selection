@@ -42,6 +42,9 @@ N_TRIALS = 2000 # set a maximum number of trials, this does not control the exp 
 
 
 def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.25,
+                           bimodal_weight = [0.5, 0.5],
+                           norm_val = [50,  10], # sufficient statistics for the first gaussian peak,
+                           norm_val_var_2 = [100, 10], # similarly, sufficient stats for the 2nd gaussian peak. 
                            fixed_noise_level = 5, 
                            noise_mode = 'fixed_gaussian',
                            percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),
@@ -49,7 +52,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
                            LEARNER_TYPE = 'dumb' , # to dumb or not dumb it is a question 'feedback'
                            UPDATER_TYPE = 'none' , #none or "smooth_batch"
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
-                           random_seed = 0):
+                           random_seed = 0,
+                           ):
     
 
     #for comparision
@@ -111,6 +115,7 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
     #neuron set up : 'std (20 neurons)' or 'toy (4 neurons)' 
     N_NEURONS, N_STATES, sim_C = get_enc_setup(sim_mode = 'rot_90', n_neurons= n_neurons)
 
+    # this basically specifies the noise model 
     (percent_of_count_in_a_list, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)= \
         generate_binary_feature_distribution(percent_high_SNR_noises, n_neurons, fraction_snr)
 
