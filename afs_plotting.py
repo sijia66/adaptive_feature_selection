@@ -112,3 +112,33 @@ def get_cmap(n_lines, color = None):
     cmap.set_array([])
 
     return cmap
+
+
+def plot_feature_selection(active_feat_set_list, ax = None):
+    """
+    plot the selection strategy map. 
+    """
+    from matplotlib import colors
+    
+    
+        
+    active_feat_heat_map = np.array(active_feat_set_list, dtype = np.int32)
+    active_feat_heat_map = np.ma.masked_where(active_feat_heat_map == False, active_feat_heat_map)
+    
+
+    
+    if ax is None: 
+        fig, ax = plt.subplots()
+        print(type(ax))
+        
+        #color true to yellow
+    cmap = colors.ListedColormap(['yellow'])
+    ax.imshow(active_feat_heat_map.T, cmap = cmap)
+
+   
+    cmap.set_bad(color='blue')
+
+    ax.set_xlabel('Learner batch')
+    ax.set_ylabel('Feature index')
+
+    return ax

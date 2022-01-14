@@ -79,6 +79,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
         percent_of_count_in_a_list.append(percent_of_count)
 
 
+    
+
     #for comparision
     #for comparision
     exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
@@ -233,13 +235,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
         feats.append(SimKFDecoderSup)
         feats_2.append(SimKFDecoderSup)
         print(f'{__name__}: set decoder to SimKFDecoderSup\n')
-
-
-    # ##  clda: learner and updater
-
-    # In[14]:
-
-
 
     #setting clda parameters 
     ##learner: collects paired data at batch_sizes
@@ -532,7 +527,8 @@ from numpy import random
 import numpy as np
 
 
-def run_lasso_sims(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
+def run_lasso_sims(total_exp_time = 60, lasso_alpha = 1, adaptive_lasso_flag = False, 
+                           n_neurons = 128, fraction_snr = 0.25,
                            percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/neurons_128/run_3/',
                            random_seed = 0):
@@ -601,8 +597,7 @@ def run_lasso_sims(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
     #for comparision
     #for comparision
 
-    exp_conds = [f'lasso_FS_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
-
+    exp_conds = [f'lasso_FS_alpha_{lasso_alpha}_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
     print(f'we have experimental conditions {exp_conds}')
 
 
@@ -743,11 +738,6 @@ def run_lasso_sims(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
         print(f'{__name__}: need to specify an updater')
 
 
-    # ## feature selector setup
-
-    # In[15]:
-
-
     from feature_selection_feature import FeatureTransformer, TransformerBatchToFit
     from feature_selection_feature import FeatureSelector, LassoFeatureSelector, SNRFeatureSelector, IterativeFeatureSelector
     from feature_selection_feature import ReliabilityFeatureSelector
@@ -813,6 +803,7 @@ def run_lasso_sims(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
         d['half_life'] = UPDATER_HALF_LIFE
         d['no_noise_neuron_ind'] = no_noise_neuron_ind
         d['noise_neuron_ind'] = noise_neuron_ind
+        d['adaptive_lasso_flag'] = adaptive_lasso_flag
         
         d.update(kwargs_feature)
         

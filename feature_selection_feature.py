@@ -1,4 +1,5 @@
 from ast import Num
+import functools
 import numpy as np
 from numpy.lib.function_base import _select_dispatcher
 from sklearn.linear_model import Lasso
@@ -663,6 +664,9 @@ class LassoFeatureSelector(FeatureSelector):
         self._adaptive_lasso_flag = kwargs['adaptive_lasso_flag'] if 'adaptive_lasso_flag' in kwargs else False
         self._init_lasso_regression(self.current_lasso, 
                                    self.max_iter)
+
+        if self._adaptive_lasso_flag:
+            self._setup_lasso_alpha_curve(**kwargs)
         
         print(f'{__name__}: initialized lasso regression with an alpha of {self.current_lasso} and a max number of iteration of {self.max_iter}')
 
@@ -683,6 +687,8 @@ class LassoFeatureSelector(FeatureSelector):
         target_matrix[np.array]: n_time_points by n_target fitting vars
         '''
 
+        self.feature_measure_count += 1
+
         if len(feature_matrix) != len(target_matrix):
             feature_matrix = feature_matrix.T
             target_matrix = target_matrix.T
@@ -697,6 +703,35 @@ class LassoFeatureSelector(FeatureSelector):
         
         #save to the history of measures
         self.history_of_weights.append(self.get_feature_weights())
+    
+    def _setup_lasso_alpha_curve(self, **kwargs):
+        
+        self._start_batch = kwargs['fs_start_batch'] if  'fs_start_batch' in kwargs else 10
+        self._finish_batch = kwargs['fs_finish_batch'] if  'fs_finish_batch' in kwargs else 60
+        
+        self._start_val = kwargs['lasso_start_val'] if  'lasso_start_val' in kwargs else 1
+        self._finish_val = kwargs['lasso_finish_val'] if  'fs_finish_val' in kwargs else 10
+        
+        def calc_linear_alpha_values(start_batch, start_val, 
+                             finish_batch, finish_val, 
+                             batch_count):
+            """
+            this is a ReLU function for alpha values.
+            """
+            slope = (start_val - finish_val)/(start_batch - finish_batch)
+
+            if batch_count < start_batch:
+                return start_val
+            elif batch_count > finish_batch:
+                return finish_val
+            else:
+                return slope * (batch_count - start_batch) + start_val
+
+        # uses partial function to construct a function to calculate
+        # alpha
+        self.calc_current_lasso = functools.partial(calc_linear_alpha_values, 
+                                    self._start_batch, self._start_val,
+                                    self._finish_batch, self._finish_val)
         
     def get_feature_weights(self):
         if self.measure_ready: 
@@ -719,8 +754,14 @@ class LassoFeatureSelector(FeatureSelector):
         #prepare data dict
 
         data_dict = {
-            'lasso_hist': self.history_of_weights
+            'lasso_hist': self.history_of_weights,
         }
+
+        if self._adaptive_lasso_flag:
+            data_dict['start_batch'] = self._start_batch
+            data_dict['start_val'] = self._start_val
+            data_dict['finish_batch'] = self._finish_batch
+            data_dict['finish_val'] = self._finish_val
 
         #save to data dict
         #mk temporary directory 
