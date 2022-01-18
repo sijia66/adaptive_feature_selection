@@ -56,8 +56,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
                            ):
     
 
-    #for comparision
-    #for comparision
+    ##################################################################################
+    # set up file names for comparision
     exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
     exp_conds_keep = [f'same_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
     exp_conds = [f'wo_FS_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
