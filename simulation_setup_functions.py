@@ -203,7 +203,9 @@ def generate_bimodal(N, w, mu_1, var_1, mu_2, var_2, seed = 0, debug = True):
   return y
 
 
-def generate_binary_features_by_thresholding(normal_val, norm_val_2, feature_weights):
+def generate_binary_features_by_thresholding(percent_high_SNR_noises,
+                                            normal_val, 
+                                            norm_val_2, feature_weights):
     """
     calculate the threshold from the given normal distributions and
     and apply the threshold to the feature weights.
@@ -232,7 +234,17 @@ def generate_binary_features_by_thresholding(normal_val, norm_val_2, feature_wei
 
     # set up the noise distribution
     # TODO, make this different for each distri
-    percent_of_count = np.ones(n_neurons)[:, np.newaxis]
+    # make percent of count into a list 
+    percent_of_count_in_a_list = list()
+    num_noises = len(percent_high_SNR_noises)
+
+    for i in range(num_noises):
+        percent_of_count = np.ones(n_neurons)[:, np.newaxis]
+
+        percent_of_count[noise_neuron_ind] = 1
+        percent_of_count[no_noise_neuron_ind] = percent_high_SNR_noises[i]
+        
+        percent_of_count_in_a_list.append(percent_of_count)
 
     return (percent_of_count, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)
 
