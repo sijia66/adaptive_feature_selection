@@ -68,11 +68,12 @@ def get_enc_setup(sim_mode = 'two_gaussian_peaks', tuning_level = 1, n_neurons =
         feature_weights = generate_bimodal(n_neurons, bimodal_weight, 
                                             norm_var[0], norm_var[1], 
                                             norm_var_2[0], norm_var_2[1])
-        feature_weights.sort()[::-1]
+        # sort the weights in descending order
+        feature_weights = np.sort(feature_weights)[::-1]
 
         sim_C = _get_rand_encoder_matrix(n_neurons, 7, feature_weights)
 
-        return (n_neurons, N_states, sim_C, feature_weights)
+        return (n_neurons, N_STATES, sim_C, feature_weights)
     else:
         raise Exception(f'not recognized mode {sim_mode}')
     
@@ -194,7 +195,7 @@ def generate_bimodal(N, w, mu_1, var_1, mu_2, var_2, seed = 0, debug = True):
   weights = np.array(w) / sum(w)
 
   # The indices are sampled by biasing the weights
-  mixture_idx = np.random.choice(len(weights), size=n, replace=True, p=weights)
+  mixture_idx = np.random.choice(len(weights), size=N, replace=True, p=weights)
 
   # y is the mixture sample
   y = np.fromiter((ss.norm.rvs(*(norm_params[i])) for i in mixture_idx),
@@ -246,7 +247,7 @@ def generate_binary_features_by_thresholding(percent_high_SNR_noises,
         
         percent_of_count_in_a_list.append(percent_of_count)
 
-    return (percent_of_count, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)
+    return (percent_of_count_in_a_list, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)
 
 
 def get_KF_C_Q_from_decoder(first_decoder):
