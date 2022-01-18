@@ -250,7 +250,9 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
         d['total_exp_time'] = total_exp_time
         
         d['assist_level'] = assist_level
+        d['feature_weights'] = feature_weights
         d['sim_C'] = sim_C
+
         
         d['noise_mode'] = noise_mode
         d['percent_noise'] = percent_of_count_in_a_list[i]
