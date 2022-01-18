@@ -22,6 +22,7 @@ def get_enc_setup(sim_mode = 'two_gaussian_peaks', tuning_level = 1, n_neurons =
 
     print(f'{__name__}: get_enc_setup has a tuning_level of {tuning_level} \n')
 
+    N_STATES = 7  # 3 positions and 3 velocities and an offset
     if sim_mode == 'toy':
         #by toy, w mn 4 neurons:
             #first 2 ctrl x velo
@@ -70,6 +71,8 @@ def get_enc_setup(sim_mode = 'two_gaussian_peaks', tuning_level = 1, n_neurons =
         feature_weights.sort()[::-1]
 
         sim_C = _get_rand_encoder_matrix(n_neurons, 7, feature_weights)
+
+        return (n_neurons, N_states, sim_C, feature_weights)
     else:
         raise Exception(f'not recognized mode {sim_mode}')
     
@@ -198,6 +201,41 @@ def generate_bimodal(N, w, mu_1, var_1, mu_2, var_2, seed = 0, debug = True):
                     dtype=np.float64)
   
   return y
+
+
+def generate_binary_features_by_thresholding(normal_val, norm_val_2, feature_weights):
+    """
+    calculate the threshold from the given normal distributions and
+    and apply the threshold to the feature weights.
+    """
+
+
+    # the average of the mean is the threshold
+    norm_val_mean, norm_val_var = normal_val
+    norm_val_2_mean, norm_val_2_val = norm_val_2
+    threshold = (norm_val_mean + norm_val_2_mean) / 2
+
+    # find the indices for those features above and below the threshold
+    no_noise_neuron_ind = np.argwhere(feature_weights >= threshold)
+    noise_neuron_ind = np.argwhere(feature_weights < threshold)
+
+    # this is redundent, but also make two boolean arrays to keep track of the noise and non-noise features.
+    # prusumbly, this would speed up indicing. 
+    n_neurons = len(feature_weights)
+
+    noise_neuron_list = np.full(n_neurons, False, dtype = bool)
+    no_noise_neuron_list = np.full(n_neurons, False, dtype = bool)
+
+
+    noise_neuron_list[noise_neuron_ind] = True
+    no_noise_neuron_list[no_noise_neuron_ind] = True
+
+    # set up the noise distribution
+    # TODO, make this different for each distri
+    percent_of_count = np.ones(n_neurons)[:, np.newaxis]
+
+    return (percent_of_count, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)
+
 
 def get_KF_C_Q_from_decoder(first_decoder):
     """
