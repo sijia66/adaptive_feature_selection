@@ -426,6 +426,9 @@ class IterativeFeatureSelector(FeatureSelector):
         super().__init__(*args, **kwargs)
 
         self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
+        print("********************************************************")
+        print(f'IterativeFeatureSelector: feature selection at {self.train_high_SNR_time}\n')
+        print("********************************************************")
         #TODO: assume the first N number of neurons are high SNR 
         self.N_HIGH_SNR = np.sum(self._active_feat_set)
 
