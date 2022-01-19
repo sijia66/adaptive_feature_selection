@@ -47,6 +47,7 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
                            norm_var_2 = [100, 10], # similarly, sufficient stats for the 2nd gaussian peak. 
                            fixed_noise_level = 5, 
                            noise_mode = 'fixed_gaussian',
+                           train_high_SNR_time = 1,
                            percent_high_SNR_noises = np.arange(1, 0.9, -0.2),
                            DECODER_MODE = 'random',  # decoder mode selection
                            LEARNER_TYPE = 'feedback' , # to dumb or not dumb it is a question 'feedback'
@@ -58,9 +59,10 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
 
     ##################################################################################
     # set up file names for comparision
+    exp_conds = [f'wo_FS_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
     exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
     exp_conds_keep = [f'same_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
-    exp_conds = [f'wo_FS_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
+    
 
     exp_conds.extend(exp_conds_add)
     exp_conds.extend(exp_conds_keep)
@@ -201,7 +203,7 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
         'transform_y_flag':False,
         'n_starting_feats': n_neurons,
         'n_states':  7,
-        "train_high_SNR_time": 60
+        "train_high_SNR_time": train_high_SNR_time 
     }
 
     print('kwargs will be updated in a later time')
@@ -214,11 +216,11 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
 
     ########################################################################################################################
     # combine experimental features
-    exp_feats = [feats] * NUM_EXP
+    exp_feats = [feats] * NUM_NOISES
 
-    e_f_2 = [feats_2] * NUM_EXP
+    e_f_2 = [feats_2] * NUM_NOISES
 
-    e_f_3 = [feats] * NUM_EXP
+    e_f_3 = [feats] * NUM_NOISES
 
     exp_feats.extend(e_f_2)
     exp_feats.extend(e_f_3)
@@ -289,7 +291,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
     kwargs_exps.extend(kwargs_exps_start)
 
     print(f'we have got {len(kwargs_exps)} exps')
-    kwargs_exps[1]['init_feat_set']
 
     #########################################################################################################################
     # ## make and initalize experiment instances
@@ -298,6 +299,9 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
     np.random.seed(0)
 
     exps = list()#create a list of experiment
+
+    # double check the number of seq matches that of the exp condi
+    assert len(seqs) == len(exp_feats)
 
     for i,s in enumerate(seqs):
         #spawn the task
@@ -358,7 +362,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
         e.sinks.reset()
         
         print(f'Finished running  {exp_conds[i]}')
-        
+        print("***********************************************************")
+        print("***********************************************************")
         print()
     
 
