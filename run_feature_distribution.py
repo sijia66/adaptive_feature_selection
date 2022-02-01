@@ -1,10 +1,10 @@
 import numpy as np
 
 # shows the kind of experiments we can generate
-exp_types = ['gap_difference', 'std_difference', 'single_target_reach']
+exp_types = ['gap_difference', 'std_difference', 'single_target_reach','noise_scan']
 exp_type = 'std_difference'
 
-exp_types_to_run = ['noise_scan']
+exp_types_to_run = ['clda_scan']
 
 N_NEURONS = 128
 
@@ -12,10 +12,73 @@ N_NEURONS = 128
 # generic task information
 from simulation_runs import run_iter_feat_addition
 total_exp_time = 1200 # in seconds
+
+#####################################################################
+# run clda scan
+rhos = [0, 0.5, 0.9, 1] # this determines what fraction of old data can be incorporated into the new update
+batches = [10, 20, 40, 80, 160, 320] # this would also determine the batch time sort of thing
+
+data_dump_folder = \
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_01_28_clda_scan/'
+mean_first_peak = 50
+mean_second_peak = 50
+std_of_peaks = 10
+
+if "clda_scan" in exp_types_to_run:
+
+    for rho in rhos:
+        for batch_len in batches:
+
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
+            print(f'running experiment with clda rho of {rho} and a batch length of {batch_len}')
+            run_iter_feat_addition(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                rho = rho, 
+                                batch_len = batch_len,
+                                data_dump_folder = data_dump_folder,
+                                norm_val= [mean_first_peak, std_of_peaks],
+                                norm_var_2= [mean_second_peak, std_of_peaks],
+                                train_high_SNR_time = 60, #  60 batches or  1200 times)
+
+            )
+
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
+
+
 #####################################################################
 # noise scan
+data_dump_folder = \
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_01_31_noise_scan_range_1_to128_1/'
+mean_first_peak = 50
+mean_second_peak = 50
+std_of_peaks = 10
+noises = np.arange(7,9)
+noises = np.exp2(noises)
+noises = np.array([100])
 
+if "noise_scan" in exp_types_to_run:
 
+    for noise in noises:
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+        print(f'running experiment with noise leve at at {noise}')
+        run_iter_feat_addition(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                            data_dump_folder = data_dump_folder,
+                            norm_val= [mean_first_peak, std_of_peaks],
+                            norm_var_2= [mean_second_peak, std_of_peaks],
+                            train_high_SNR_time = 60, #  60 batches or  1200 times)
+                            fixed_noise_level=noise
+
+        )
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
 
 
 ######################################################################

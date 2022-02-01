@@ -12,6 +12,19 @@
 from numpy import random
 import numpy as np
 
+def run_iter_feat_addition_cleaned
+
+
+def run_iter_feat_addition_cleaned(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
+                           percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),
+                           data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/neurons_128/run_3/',
+                           random_seed = 0):
+
+    
+    
+    pass
+
+
 
 def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
                            percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),
@@ -79,8 +92,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
         percent_of_count_in_a_list.append(percent_of_count)
 
 
-    
-
     #for comparision
     #for comparision
     exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
@@ -92,7 +103,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     print(f'we have experimental conditions {exp_conds}')
 
 
-    # In[7]:
 
 
     # CHANGE: game mechanics: generate task params
@@ -147,10 +157,10 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
 
     #create a second version of the tasks
     seqs = itertools.tee(seq, NUM_EXP + 1)
+    
     target_seq = list(seqs[NUM_EXP])
 
     seqs = seqs[:NUM_EXP]
-
 
     SAVE_HDF = True
     SAVE_SIM_HDF = True #this makes the task data available as exp.task_data_hist
@@ -182,8 +192,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     feats_2.append(TimeCountDown)
 
     
-
-
     # ## encoder
     # 
     # the cosine tuned encoder uses a poisson process, right
@@ -216,11 +224,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     feats_2.append(SimCosineTunedEncWithNoise)
 
 
-    # ## decoder setup
-
-    # In[13]:
-
-
     #clda on random 
     DECODER_MODE = 'random' # random 
 
@@ -244,7 +247,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     #learner and updater: actualy set up rho
     UPDATER_BATCH_TIME = 1
     UPDATER_HALF_LIFE = np.log(RHO)  * UPDATER_BATCH_TIME / np.log(0.5)
-
 
 
     LEARNER_TYPE = 'feedback' # to dumb or not dumb it is a question 'feedback'
@@ -275,14 +277,9 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
 
     # ## feature selector setup
 
-    # In[15]:
-
-
     from feature_selection_feature import FeatureTransformer, TransformerBatchToFit
     from feature_selection_feature import FeatureSelector, LassoFeatureSelector, SNRFeatureSelector, IterativeFeatureSelector
     from feature_selection_feature import ReliabilityFeatureSelector
-
-
     #pass the real time limit on clock
     feats.append(FeatureSelector)
     feats_2.append(IterativeFeatureSelector)
@@ -337,11 +334,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
     feats_2.append(SimClockTick)
     feats_2.append(SimTime)
 
-
-    # In[19]:
-
-
-
     kwargs_exps = list()
 
     for i in range(num_noises):
@@ -389,8 +381,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
 
 
     # ## make and initalize experiment instances
-
-    # In[20]:
 
 
     #seed the experiment
@@ -525,7 +515,6 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 128, fraction_snr = 
 
 from numpy import random
 import numpy as np
-
 
 def run_lasso_sims(total_exp_time = 60, lasso_alpha = 1, adaptive_lasso_flag = False, 
                            n_neurons = 128, fraction_snr = 0.25,
