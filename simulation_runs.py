@@ -42,10 +42,12 @@ N_TRIALS = 2000 # set a maximum number of trials, this does not control the exp 
 
 
 def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.25,
+                           rho = 0.5, 
+                           batch_len = 100, 
                            bimodal_weight = [0.5, 0.5],
                            norm_val = [50,  10], # sufficient statistics for the first gaussian peak,
                            norm_var_2 = [100, 10], # similarly, sufficient stats for the 2nd gaussian peak. 
-                           fixed_noise_level = 5, 
+                           fixed_noise_level = 32, 
                            noise_mode = 'fixed_gaussian',
                            train_high_SNR_time = 1,
                            percent_high_SNR_noises = np.arange(1, 0.9, -0.2),
@@ -59,9 +61,9 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
 
     ##################################################################################
     # set up file names for comparision
-    exp_conds = [f'wo_FS_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
-    exp_conds_add = [f'iter_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
-    exp_conds_keep = [f'same_{s}_{random_seed}_{n_neurons}' for s in percent_high_SNR_noises]
+    exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
+    exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
+    exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
     
 
     exp_conds.extend(exp_conds_add)
@@ -153,8 +155,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
     # ##  clda: learner and updater
     #setting clda parameters 
     ##learner: collects paired data at batch_sizes
-    RHO = 0.5
-    batch_size = 100
+    RHO = rho
+    batch_size = batch_len
 
     #learner and updater: actualy set up rho
     UPDATER_BATCH_TIME = 1
@@ -418,3 +420,5 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
 
 if __name__ == "__main__":
     run_iter_feat_addition(percent_high_SNR_noises=[0])
+
+# %%
