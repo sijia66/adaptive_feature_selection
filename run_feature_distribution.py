@@ -15,11 +15,15 @@ total_exp_time = 1200 # in seconds
 
 #####################################################################
 # run clda scan
-rhos = [0, 0.5, 0.9, 1] # this determines what fraction of old data can be incorporated into the new update
-batches = [10, 20, 40, 80, 160, 320] # this would also determine the batch time sort of thing
+rhos = [0, 0.5, 1] # this determines what fraction of old data can be incorporated into the new update
+#batches = [10, 20, 40, 80, 160, 320] # this would also determine the batch time sort of thing
+
+# additional repair runs
+rhos = [0.5]
+batches = [160, 320]                                                                                                                                                                                                                                                                                                                                                            
 
 data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_01_28_clda_scan/'
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_03_clda_scan/'
 mean_first_peak = 50
 mean_second_peak = 50
 std_of_peaks = 10
@@ -57,7 +61,7 @@ mean_second_peak = 50
 std_of_peaks = 10
 noises = np.arange(7,9)
 noises = np.exp2(noises)
-noises = np.array([100])
+
 
 if "noise_scan" in exp_types_to_run:
 
@@ -85,13 +89,13 @@ if "noise_scan" in exp_types_to_run:
 # actually running the experiments
 # data saving stuff
 data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_01_21_gaussian_peaks/'
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_02_gaussian_peaks/'
 
 # gap difference
 # exp_type = 'gap_difference'
 mean_first_peak = 50
 std_of_peaks = 10
-mean_differences = np.arange(0, 60,  step = 10 )
+mean_differences = np.arange(0, 40,  step = 10 )
 
 if 'gap_difference' in exp_types_to_run:
     for mean_diff in mean_differences:
@@ -115,7 +119,7 @@ if 'gap_difference' in exp_types_to_run:
 
 ###################################################################################3
 data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_01_21_gaussian_stds/'
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_01_gaussian_stds/'
 
 mean_first_peak = 50
 mean_second_peak = 100
