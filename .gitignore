@@ -1,7 +1,6 @@
 /.ipynb_checkpoints
 .vscode/settings.json
 *.pyc
-*.ipynb
 *.h5
 wo_feature selection
 

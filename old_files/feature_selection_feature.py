@@ -275,7 +275,8 @@ class FeatureSelector():
             'feat_set': self._active_feat_set_list,
             'C_mat': self._used_C_mat_list,
             'Q_diag':self._used_Q_diag_list,
-            'K_mat':self._used_K_mat_list
+            'K_mat':self._used_K_mat_list,
+            'full_clda_record', self.
         }
 
         #save to data dict

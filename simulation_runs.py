@@ -383,9 +383,17 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
         old = e.h5file.name
         new = data_dump_folder + exp_conds[i] +'.h5'
         process = "cp {} {}".format(old,new)
-        
         print(process)
         subprocess.run(process, shell=True) # do not remember, assign shell value to True.
+        
+        #also get the full clda data.
+        old = e.h5file.name + '.p'
+        new = data_dump_folder + exp_conds[i] +'.p'
+        process = "cp {} {}".format(old,new)
+        print(process)
+        subprocess.run(process, shell=True) # do not remember, assign shell value to True.
+        
+
 
 
     import os

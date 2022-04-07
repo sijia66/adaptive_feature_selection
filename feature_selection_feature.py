@@ -279,12 +279,16 @@ class FeatureSelector():
             'Q_diag':self._used_Q_diag_list,
             'K_mat':self._used_K_mat_list
         }
-
         #save to data dict
         #mk temporary directory 
         import tempfile
         print(f'saving feature selection file name to {self.h5file.name}')
-        aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True)
+        aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True, debug=True)
+
+        import pickle
+
+        with open(self.h5file.name + '.p', "wb") as f:
+            pickle.dump(self.bmi_system.param_hist, f)
 
 
     def add_new_features(self, target_decoder, num_add_feat):

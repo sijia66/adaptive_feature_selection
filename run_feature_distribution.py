@@ -4,7 +4,7 @@ import numpy as np
 exp_types = ['gap_difference', 'std_difference', 'single_target_reach','noise_scan']
 exp_type = 'std_difference'
 
-exp_types_to_run = ['clda_scan']
+exp_types_to_run = ['gap_difference']
 
 N_NEURONS = 128
 
@@ -89,13 +89,13 @@ if "noise_scan" in exp_types_to_run:
 # actually running the experiments
 # data saving stuff
 data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_02_gaussian_peaks/'
+'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_17_gaussian_peaks/'
 
 # gap difference
 # exp_type = 'gap_difference'
 mean_first_peak = 50
 std_of_peaks = 10
-mean_differences = np.arange(0, 40,  step = 10 )
+mean_differences = np.arange(50, 60,  step = 10 )
 
 if 'gap_difference' in exp_types_to_run:
     for mean_diff in mean_differences:
