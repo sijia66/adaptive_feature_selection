@@ -14,9 +14,6 @@ from features.simulation_features import SimHDF, SimTime
 
 from riglib import experiment
 
-from riglib.stereo_opengl.window import FakeWindow
-from riglib.bmi import train
-
 import weights
 
 import time
