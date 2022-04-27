@@ -12,8 +12,6 @@
 from numpy import random
 import numpy as np
 
-def run_iter_feat_addition_cleaned
-
 
 def run_iter_feat_addition_cleaned(total_exp_time = 60, n_neurons = 128, fraction_snr = 0.25,
                            percent_high_SNR_noises = np.arange(0.7, 0.6, -0.2),

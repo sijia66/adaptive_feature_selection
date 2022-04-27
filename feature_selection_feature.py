@@ -509,7 +509,7 @@ class ConvexFeatureSelector(FeatureSelector):
        selected_values = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, diag_noise_q_mat, self._objective_offset)
        
        # threshold the values and calc the active features.
-       selected_indices = np.argwhere(selected_values >= self._objective_offset)
+       selected_indices = np.argwhere(selected_values >= self._selection_threshold)
 
        self._active_feat_set = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
        self._active_feat_set[selected_indices] = True
