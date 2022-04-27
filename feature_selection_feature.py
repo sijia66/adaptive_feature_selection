@@ -1,8 +1,9 @@
-from ast import Num
+
 import functools
 import numpy as np
 from numpy.lib.function_base import _select_dispatcher
 from sklearn.linear_model import Lasso
+import cvxpy as cp
 
 from features import SaveHDF
 
@@ -201,6 +202,17 @@ class FeatureSelector():
             print(self._active_feat_set)
             raise Exception('Did not work')
         return trans_neural_obs
+
+    def measure_neurons_wz_intendedkin_and_spike(self, intended_kin, spike_counts):
+        '''
+        calculate the y-CX covariance matrix
+        and then select the top 25 percentile features
+        '''
+
+        C_hat, Q_hat = kfdecoder.KalmanFilter.MLE_obs_model(intended_kin, spike_counts, include_offset=False)
+
+
+        return (C_hat, Q_hat)
 
     def select_decoder_features(self, target_decoder, debug = False):
         '''
@@ -408,17 +420,7 @@ class SNRFeatureSelector(FeatureSelector):
         print(f'determine feature change: after set up {self._active_feat_set}')
             
 
-    def measure_neurons_wz_intendedkin_and_spike(self, intended_kin, spike_counts):
-        '''
-        calculate the y-CX covariance matrix
-        and then select the top 25 percentile features
-        '''
 
-        C_hat, Q_hat = kfdecoder.KalmanFilter.MLE_obs_model(intended_kin, spike_counts, include_offset=False)
-        Q_diag = np.diag(Q_hat)
-        self.Q_diag_list.append(Q_diag)
-
-        return Q_diag
 
     def threshold_features(self, Q_diag, per):
         Q_per = np.percentile(Q_diag,  per)
@@ -465,6 +467,88 @@ class IterativeFeatureSelector(FeatureSelector):
 
        self.decoder_change_flag = True
        self.feature_change_flag = True
+
+
+class ConvexFeatureSelector(FeatureSelector):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
+        self._objective_offset = kwargs.pop('objective_offset', 1)
+        self._selection_threshold = kwargs.pop("threshold selection", 0.5)
+        
+        print("********************************************************")
+        print(f'Convex feature selection: feature selection at {self.train_high_SNR_time}\n')
+        print("********************************************************")
+        
+        #TODO: assume the first N number of neurons are high SNR 
+        self.N_HIGH_SNR = np.sum(self._active_feat_set)
+
+    def measure_features(self, feature_matrix, target_matrix):
+        '''
+        feature_matrix[np.array]: n_time_points by n_features
+        target_matrix[np.array]: n_time_points by n_target fitting vars
+        '''
+        self.feature_measure_count += 1
+
+        C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
+
+        self.determine_change_features(C_mat, Q_diag)
+
+    def determine_change_features(self, obs_c_mat, noise_q_mat):
+
+       if self.feature_measure_count <= self.train_high_SNR_time:
+           return
+
+        # bad software practice, has to assume access to the kf c decoder
+
+       obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
+
+       diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
+       selected_values = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, diag_noise_q_mat, self._objective_offset)
+       
+       # threshold the values and calc the active features.
+       selected_indices = np.argwhere(selected_values >= self._objective_offset)
+
+       self._active_feat_set = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
+       self._active_feat_set[selected_indices] = True
+
+       # set the flags to make these changes effective. 
+       self.decoder_change_flag = True
+       self.feature_change_flag = True
+
+    @classmethod
+    def convex_feature_selection_by_obj_fraction(C, Q_diag, offset):
+        """
+        trying to solve the convex feature selection problem of the form
+        minimize f(z) = log det (C.T Q^(-1) diag(z) C )
+        subject to 0.001 <= theta <= 1
+
+        Args:
+            C (np.array): num_features by num_states
+            Q (np.array): 
+
+        """
+
+        if offset == 0:
+            return np.ones((C.shape[0]))
+
+        Q_diag_inv =  np.linalg.inv(Q_diag)
+
+        optimal_val = np.log(np.linalg.det((C.T @ Q_diag_inv @ C)))
+
+        constraints = [theta >=0.0001,  theta <= 1, 
+                    cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) >= optimal_val - offset]
+
+        feature_selection_objective = cp.Minimize( theta.T @ ones_d)
+        feature_selection_problem = cp.Problem(feature_selection_objective, constraints)
+
+        result = feature_selection_problem.solve()
+
+        selected_values = theta.value.copy()
+
+        return selected_values
 
 
 
