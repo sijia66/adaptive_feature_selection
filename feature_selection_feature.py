@@ -519,7 +519,7 @@ class ConvexFeatureSelector(FeatureSelector):
        self.feature_change_flag = True
 
     @classmethod
-    def convex_feature_selection_by_obj_fraction(C, Q_diag, offset):
+    def convex_feature_selection_by_obj_fraction(self, C, Q_diag, offset):
         """
         trying to solve the convex feature selection problem of the form
         minimize f(z) = log det (C.T Q^(-1) diag(z) C )
@@ -533,6 +533,10 @@ class ConvexFeatureSelector(FeatureSelector):
 
         if offset == 0:
             return np.ones((C.shape[0]))
+
+        d = C.shape[0]
+        ones_d = np.ones((d,1))
+        theta = cp.Variable((d,1))
 
         Q_diag_inv =  np.linalg.inv(Q_diag)
 
