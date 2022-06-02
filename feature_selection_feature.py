@@ -494,6 +494,7 @@ class ConvexFeatureSelector(FeatureSelector):
 
         C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
 
+
         self.determine_change_features(C_mat, Q_diag)
 
     def determine_change_features(self, obs_c_mat, noise_q_mat):
@@ -504,22 +505,32 @@ class ConvexFeatureSelector(FeatureSelector):
         # bad software practice, has to assume access to the kf c decoder
 
        obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
-
        diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
-       selected_values = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, diag_noise_q_mat, self._objective_offset)
+
+       if self.feature_measure_count == self.train_high_SNR_time + 1:
+            Q_diag_inv =  np.linalg.inv(diag_noise_q_mat)
+            self._optimal_val = np.log(np.linalg.det((obs_c_velocity_states_only.T @ Q_diag_inv @ obs_c_velocity_states_only)))
+
+
+       selected_values = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, diag_noise_q_mat, 
+                                                                      self._optimal_val,
+                                                                      self._objective_offset)
        
        # threshold the values and calc the active features.
        selected_indices = np.argwhere(selected_values >= self._selection_threshold)
 
-       self._active_feat_set = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
-       self._active_feat_set[selected_indices] = True
-
+       # we are gonna take the intersection with exisiting features
+       all_selected_features = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
+       all_selected_features[selected_indices] = True
+       # take the intersection of the features
+       self._active_feat_set = np.logical_or(self._active_feat_set, all_selected_features)
+       
        # set the flags to make these changes effective. 
        self.decoder_change_flag = True
        self.feature_change_flag = True
 
     @classmethod
-    def convex_feature_selection_by_obj_fraction(self, C, Q_diag, offset):
+    def convex_feature_selection_by_obj_fraction(self, C, Q_diag, optimal_val, offset):
         """
         trying to solve the convex feature selection problem of the form
         minimize f(z) = log det (C.T Q^(-1) diag(z) C )
@@ -540,9 +551,7 @@ class ConvexFeatureSelector(FeatureSelector):
 
         Q_diag_inv =  np.linalg.inv(Q_diag)
 
-        optimal_val = np.log(np.linalg.det((C.T @ Q_diag_inv @ C)))
-
-        constraints = [theta >=0.0001,  theta <= 1, 
+        constraints = [theta >=0.0,  theta <= 1, 
                     cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) >= optimal_val - offset]
 
         feature_selection_objective = cp.Minimize( theta.T @ ones_d)
@@ -552,7 +561,7 @@ class ConvexFeatureSelector(FeatureSelector):
 
         selected_values = theta.value.copy()
 
-        return selected_values
+        return np.squeeze(selected_values)
 
 
 

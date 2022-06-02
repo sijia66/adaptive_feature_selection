@@ -6,7 +6,7 @@ from simulation_runs import run_convex_selection
 exp_types = ['lasso', 'convex']
 exp_types_to_run = ['convex']
 
-total_exp_time = 240 # in seconds
+total_exp_time = 1200 # in seconds
 N_NEURONS = 128
 
 
@@ -50,11 +50,10 @@ if "convex" in exp_types_to_run:
 
         # noise scan
     data_dump_folder = \
-    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/'
+    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/logical_or/'
     mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 10
-
 
     print("********************************************")
     print("********************************************")
@@ -64,10 +63,8 @@ if "convex" in exp_types_to_run:
                         data_dump_folder = data_dump_folder,
                         norm_val= [mean_first_peak, std_of_peaks],
                         norm_var_2= [mean_second_peak, std_of_peaks],
-                        train_high_SNR_time = 10, #  60 batches or  1200 times)
-
+                        train_high_SNR_time = 20, #  60 batches or  1200 times)
     )
-
     print("********************************************")
     print("********************************************")
     print("********************************************")
