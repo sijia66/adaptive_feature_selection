@@ -676,7 +676,7 @@ class JointConvexFeatureSelector(FeatureSelector):
 
     
     @classmethod
-    def convex_feature_selection_by_obj_fraction(C, Q_diag, optimal_val, offset):
+    def convex_feature_selection_by_obj_fraction(self, C, Q_diag, optimal_val, offset):
         """
             trying to solve the convex feature selection problem of the form
             minimize f(z) = log det (C.T Q^(-1) diag(z) C )
