@@ -436,8 +436,10 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
                            DECODER_MODE = 'random',  # decoder mode selection
                            LEARNER_TYPE = 'feedback' , # to dumb or not dumb it is a question 'feedback'
                            UPDATER_TYPE = 'smooth_batch' , #none or "smooth_batch"
+                           FEATURE_SELETOR_TYPE = "convex",
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
                            random_seed = 0,
+                           **kwargs
                            ):
     
 
@@ -569,17 +571,12 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     ############################################################################################################################
     # ## feature selector setup
     from feature_selection_feature import FeatureTransformer, TransformerBatchToFit
-    from feature_selection_feature import FeatureSelector, ConvexFeatureSelector
+    from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector
     from feature_selection_feature import ReliabilityFeatureSelector
 
 
     #pass the real time limit on clock
     feats.append(FeatureSelector)
-    feats_2.append(ConvexFeatureSelector)
-
-    feature_x_meth_arg = [
-        ('transpose', None ),
-    ]
 
     kwargs_feature = dict()
     kwargs_feature = {
@@ -589,6 +586,29 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         'n_states':  7,
         "train_high_SNR_time": train_high_SNR_time 
     }
+
+    if FEATURE_SELETOR_TYPE == "convex":
+        feats_2.append(ConvexFeatureSelector)
+    elif FEATURE_SELETOR_TYPE == "joint_convex":
+        feats_2.append(JointConvexFeatureSelector)
+
+        # add this method specific parameter
+        # this is a bit redundent, but I guess it's fun
+        kwargs_feature['objective_offset'] = kwargs['objective_offset']
+        kwargs_feature['sparsity_coef'] = kwargs["sparsity_coef"]
+        kwargs_feature["smoothness_coef"] = kwargs["smoothness_coef"]
+        kwargs_feature["num_of_lags"] = kwargs["num_of_lags"]
+        kwargs_feature["past_batch_decay_factor"] = kwargs["past_batch_decay_factor"]
+        kwargs_feature["threshold_selection"] = kwargs["threshold_selection"]
+
+    else:
+        raise Exception("Unimplemented feature selector::", FEATURE_SELETOR_TYPE)
+
+    feature_x_meth_arg = [
+        ('transpose', None ),
+    ]
+
+
 
     print('kwargs will be updated in a later time')
     print(f'the feature adaptation project is tracking {kwargs_feature.keys()} ')

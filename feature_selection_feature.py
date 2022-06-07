@@ -600,7 +600,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         self._next_disc_memory = np.empty((N_TOTAL_AVAIL_FEATS, 0))
 
         # after we do optimization, we need these params to get our selection going sort of thing.
-        self._selection_threshold = kwargs.pop("threshold selection", 0.5)
+        self._selection_threshold = kwargs.pop("threshold_selection", 0.5)
         
         print("********************************************************")
         print(f'Convex feature selection: feature selection at {self.train_high_SNR_time}\n')
@@ -667,7 +667,7 @@ class JointConvexFeatureSelector(FeatureSelector):
        # we are gonna take the intersection with exisiting features
        all_selected_features = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
        all_selected_features[selected_indices] = True
-       # TODO this needs to be worked out
+
        self._active_feat_set = all_selected_features
        
        # set the flags to make these changes effective. 
