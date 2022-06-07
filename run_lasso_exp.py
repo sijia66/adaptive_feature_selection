@@ -85,7 +85,7 @@ if "joint_convex" in exp_types_to_run:
 
     # noise scan
     data_dump_folder = \
-    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/logical_or/'
+    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/joint_smoothness_sparsity/'
     
     # we set up the neural populations
     mean_first_peak = 50
@@ -107,7 +107,7 @@ if "joint_convex" in exp_types_to_run:
                         threshold_selection = 0.5,
                         objective_offset = 1,
                         sparsity_coef = 0.1,
-                        smoothenss_coef = 0.1,
+                        smoothness_coef = 0.1,
                         num_of_lags = 5,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
                         past_batch_decay_factor = 0.4, 
 
