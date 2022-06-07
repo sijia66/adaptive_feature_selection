@@ -564,6 +564,185 @@ class ConvexFeatureSelector(FeatureSelector):
         return np.squeeze(selected_values)
 
 
+def make_a_vector_of_ones(a_matrix, mode = "same_number_as_row"):
+
+    # deal with a matrix
+    assert len(a_matrix.shape) == 2
+    num_row, num_col = a_matrix.shape
+
+    if  mode == "same_number_as_row":
+        return np.ones((num_row, 1))
+    elif mode == "same_number_as_col":
+        return np.ones(( num_col,1))
+    else:
+        raise Exception("only supports modes same_number_as_row or same_number_as_col")
+
+import collections
+class JointConvexFeatureSelector(FeatureSelector):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
+        
+        # the stuff for the achieving some fraction of the feature selection method
+        self._objective_offset = kwargs.pop('objective_offset', 1)
+
+        # the stuff for dual objective feature selection
+        self._sparsity_coef = kwargs.pop('sparsity_coef', 1)
+        self._smoothness_coef = kwargs.pop("smoothness_coef", 0.5)
+        self._num_lags = kwargs.pop("num_of_lags", 5)
+
+        self._alpha = kwargs.pop("past_batch_decay_factor", 0.9)
+        self._curr_prior_deque = collections.deque()
+
+        N_TOTAL_AVAIL_FEATS = 128
+        self._next_disc_memory = np.empty((N_TOTAL_AVAIL_FEATS, 0))
+
+        # after we do optimization, we need these params to get our selection going sort of thing.
+        self._selection_threshold = kwargs.pop("threshold selection", 0.5)
+        
+        print("********************************************************")
+        print(f'Convex feature selection: feature selection at {self.train_high_SNR_time}\n')
+        print("********************************************************")
+        
+        #TODO: assume the first N number of neurons are high SNR 
+        self.N_HIGH_SNR = np.sum(self._active_feat_set)
+
+    def measure_features(self, feature_matrix, target_matrix):
+        '''
+        feature_matrix[np.array]: n_time_points by n_features
+        target_matrix[np.array]: n_time_points by n_target fitting vars
+        '''
+        self.feature_measure_count += 1
+
+        C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
+
+
+        self.determine_change_features(C_mat, Q_diag)
+
+    def determine_change_features(self, obs_c_mat, noise_q_mat):
+
+       if self.feature_measure_count <= self.train_high_SNR_time:
+           return
+
+        # bad software practice, has to assume access to the kf c decoder
+
+       obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
+       diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
+
+       if self.feature_measure_count == self.train_high_SNR_time + 1:
+            Q_diag_inv =  np.linalg.inv(diag_noise_q_mat)
+            self._optimal_val = np.log(np.linalg.det((obs_c_velocity_states_only.T @ Q_diag_inv @ obs_c_velocity_states_only)))
+
+
+        # we use different obj functions for the dual objectives
+       if self._next_disc_memory.shape[1] >=  self._num_lags:
+            selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
+                                                                    diag_noise_q_mat, 
+                                                                    self._sparsity_coef, 
+                                                                    self._smoothness_coef,
+                                                                    self._next_disc_memory)
+
+       else:
+           selected_values, result = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, 
+                                                                    diag_noise_q_mat, 
+                                                                    self._optimal_val, 
+                                                                    self._objective_offset)
+        
+       
+       # set up the rotation mechanism, sort of thing.
+       self._curr_prior_deque.appendleft(selected_values.copy())
+       if len(self._curr_prior_deque) > self._num_lags:
+           self._curr_prior_deque.pop()
+
+       # set it up so 
+       self.next_disc_memory = np.array(self._curr_prior_deque).T
+       self.next_disc_memory = self._alpha * self.next_disc_memory
+
+
+       # threshold the values and calc the active features.
+       selected_indices = np.argwhere(selected_values >= self._selection_threshold)
+
+       # we are gonna take the intersection with exisiting features
+       all_selected_features = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
+       all_selected_features[selected_indices] = True
+       # TODO this needs to be worked out
+       self._active_feat_set = all_selected_features
+       
+       # set the flags to make these changes effective. 
+       self.decoder_change_flag = True
+       self.feature_change_flag = True
+
+    
+    @classmethod
+    def convex_feature_selection_by_obj_fraction(C, Q_diag, optimal_val, offset):
+        """
+            trying to solve the convex feature selection problem of the form
+            minimize f(z) = log det (C.T Q^(-1) diag(z) C )
+            subject to 0.001 <= theta <= 1
+
+            Args:
+                C (np.array): num_features by num_states
+                Q (np.array): 
+
+        """
+
+        if offset == 0:
+            return np.ones((C.shape[0]))
+
+        d = C.shape[0]
+        ones_d = np.ones((d,1))
+        theta = cp.Variable((d,1))
+
+        Q_diag_inv =  np.linalg.inv(Q_diag)
+
+        constraints = [theta >=0.0,  theta <= 1, 
+                    cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) >= optimal_val - offset]
+
+        feature_selection_objective = cp.Minimize( theta.T @ ones_d)
+        feature_selection_problem = cp.Problem(feature_selection_objective, constraints)
+
+        result = feature_selection_problem.solve()
+
+        selected_values = theta.value.copy()
+
+        return np.squeeze(selected_values), result
+
+    
+    
+    
+    @classmethod
+    def convex_feature_selection_with_joint_smooth_sparse_goals(C, 
+                                            Q_diag, 
+                                            sparsity_coef,
+                                            smoothness_coef,
+                                            prior_matrix):
+
+        num_features, num_states = C.shape
+
+        # set up the variables
+        ones_d = make_a_vector_of_ones(C, mode = "same_number_as_row")
+        ones_prior = make_a_vector_of_ones(prior_matrix, mode = "same_number_as_col")
+        
+        
+        Q_diag_inv =  np.linalg.inv(Q_diag)
+
+        # set up the problem
+        theta = cp.Variable((num_features,1))
+        feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
+                                                + sparsity_coef * theta.T @ ones_d  \
+                                                - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
+        constraints = [theta >=0.0,  theta <= 1]
+        feature_selection_problem = cp.Problem(feature_selection_objective, constraints)
+
+        # solve the problem 
+        result = feature_selection_problem.solve()
+        selected_values = theta.value.copy()
+        
+        return np.squeeze(selected_values), result
+
+
 
 class ReliabilityFeatureSelector(FeatureSelector):
     def __init__(self, *args, **kwargs):
