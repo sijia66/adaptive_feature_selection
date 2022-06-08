@@ -631,25 +631,24 @@ class JointConvexFeatureSelector(FeatureSelector):
        obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
        diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
 
-       if self.feature_measure_count == self.train_high_SNR_time + 1:
-            Q_diag_inv =  np.linalg.inv(diag_noise_q_mat)
-            self._optimal_val = np.log(np.linalg.det((obs_c_velocity_states_only.T @ Q_diag_inv @ obs_c_velocity_states_only)))
-
 
         # we use different obj functions for the dual objectives
-       if self._next_disc_memory.shape[1] >=  self._num_lags:
-            selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
-                                                                    diag_noise_q_mat, 
-                                                                    self._sparsity_coef, 
-                                                                    self._smoothness_coef,
-                                                                    self._next_disc_memory)
+       print("joint_sparseness_sparseness: ", self._next_disc_memory.shape, "num_lags",  self._num_lags)
 
-       else:
-           selected_values, result = self.convex_feature_selection_by_obj_fraction(obs_c_velocity_states_only, 
+       selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
+            selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
+       selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
+                                                                diag_noise_q_mat, 
                                                                     diag_noise_q_mat, 
-                                                                    self._optimal_val, 
-                                                                    self._objective_offset)
-        
+                                                                diag_noise_q_mat, 
+                                                                self._sparsity_coef, 
+                                                                    self._sparsity_coef, 
+                                                                self._sparsity_coef, 
+                                                                self._smoothness_coef,
+                                                                self._next_disc_memory)
+       print("doing joint smooth sparse optimization at batch ", self.feature_measure_count)
+
+
        
        # set up the rotation mechanism, sort of thing.
        self._curr_prior_deque.appendleft(selected_values.copy())
@@ -657,8 +656,8 @@ class JointConvexFeatureSelector(FeatureSelector):
            self._curr_prior_deque.pop()
 
        # set it up so 
-       self.next_disc_memory = np.array(self._curr_prior_deque).T
-       self.next_disc_memory = self._alpha * self.next_disc_memory
+       self._next_disc_memory = np.array(self._curr_prior_deque).T
+       self._next_disc_memory = self._alpha * self._next_disc_memory
 
 
        # threshold the values and calc the active features.
@@ -713,7 +712,7 @@ class JointConvexFeatureSelector(FeatureSelector):
     
     
     @classmethod
-    def convex_feature_selection_with_joint_smooth_sparse_goals(C, 
+    def convex_feature_selection_with_joint_smooth_sparse_goals(self, C, 
                                             Q_diag, 
                                             sparsity_coef,
                                             smoothness_coef,
@@ -730,9 +729,19 @@ class JointConvexFeatureSelector(FeatureSelector):
 
         # set up the problem
         theta = cp.Variable((num_features,1))
-        feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
-                                                + sparsity_coef * theta.T @ ones_d  \
-                                                - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
+
+        # add a condition that if the prior matrix is none, just ignore the smoothness_coef
+        if prior_matrix.shape[1] > 0:
+
+            feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
+                                                    + sparsity_coef * theta.T @ ones_d  \
+                                                    - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
+        
+        else: 
+            feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
+                                        + sparsity_coef * 0.1 * theta.T @ ones_d)
+            print("only doing sparsity objective")
+
         constraints = [theta >=0.0,  theta <= 1]
         feature_selection_problem = cp.Problem(feature_selection_objective, constraints)
 
