@@ -682,8 +682,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     for k in kwargs_exps_add:
         
-        k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-        k['init_feat_set'][no_noise_neuron_list] = True
+        k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
 
     for k in kwargs_exps_start:
         
