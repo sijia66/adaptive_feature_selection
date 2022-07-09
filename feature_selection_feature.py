@@ -593,6 +593,8 @@ class JointConvexFeatureSelector(FeatureSelector):
         self._setup_sparse_smooth_params(**kwargs)
         self._initialize_deque()
 
+        
+
         # after we do optimization, we need these params to get our selection going sort of thing.
         self._selection_threshold = kwargs.pop("threshold_selection", 0.5)
         
@@ -611,6 +613,8 @@ class JointConvexFeatureSelector(FeatureSelector):
         self.feature_measure_count += 1
 
         C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
+
+        smoothed_c_mat, smoothed_q_mat = self._apply_smooth_batch(C_mat, Q_diag)
 
 
         self.determine_change_features(C_mat, Q_diag)
@@ -633,7 +637,24 @@ class JointConvexFeatureSelector(FeatureSelector):
         self._smoothness_coef = kwargs.pop("smoothness_coef", 0.5)
         self._num_lags = kwargs.pop("num_of_lags", 5)
         self._alpha = kwargs.pop("past_batch_decay_factor", 0.9)
+    
+    def _setup_smooth_batch_params(self, **kwargs):
+        self.sb_rho = kwargs.pop('sb_rho', 0.5)
         
+    def _apply_smooth_batch(self,c_mat, q_mat):
+
+        if self.feature_measure_count > 1:
+            smoothed_C_mat = (1 - self.sb_rho) * self._prior_smoothed_c_mat + self.sb_rho * c_mat
+            smoothed_q_mat = (1 - self.sb_rho) * self._prior_smoothed_q_mat + self.sb_rho * q_mat
+        else:
+            smoothed_c_mat = c_mat
+            smoothed_q_mat = q_mat
+        
+        # row one c back
+        self._prior_smoothed_c_mat = np.copy(smoothed_c_mat)
+        self._prior_smoothed_q_mat = np.copy(smoothed_q_mat)
+
+        return (smoothed_C_mat, smoothed_q_mat)
 
     def determine_change_features(self, obs_c_mat, noise_q_mat):
 
