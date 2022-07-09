@@ -90,9 +90,7 @@ if "joint_convex" in exp_types_to_run:
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
-    std_of_peaks = 10
-
-    # 
+    std_of_peaks = 3
 
     print("********************************************")
     print("********************************************")
@@ -107,10 +105,9 @@ if "joint_convex" in exp_types_to_run:
                         threshold_selection = 0.5,
                         objective_offset = 1,
                         sparsity_coef = 0.1,
-                        smoothness_coef = 0.1,
-                        num_of_lags = 5,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
-                        past_batch_decay_factor = 0.8, 
-
+                        smoothness_coef = 0.15,
+                        num_of_lags = 3,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+                        past_batch_decay_factor = 0.2, 
     )
     print("********************************************")
     print("********************************************")
