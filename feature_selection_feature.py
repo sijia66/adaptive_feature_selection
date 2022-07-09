@@ -584,20 +584,14 @@ class JointConvexFeatureSelector(FeatureSelector):
         super().__init__(*args, **kwargs)
 
         self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
+        self.N_TOTAL_AVAIL_FEATS = 128
         
         # the stuff for the achieving some fraction of the feature selection method
         self._objective_offset = kwargs.pop('objective_offset', 1)
 
-        # the stuff for dual objective feature selection
-        self._sparsity_coef = kwargs.pop('sparsity_coef', 1)
-        self._smoothness_coef = kwargs.pop("smoothness_coef", 0.5)
-        self._num_lags = kwargs.pop("num_of_lags", 5)
 
-        self._alpha = kwargs.pop("past_batch_decay_factor", 0.9)
-        self._curr_prior_deque = collections.deque()
-
-        N_TOTAL_AVAIL_FEATS = 128
-        self._next_disc_memory = np.empty((N_TOTAL_AVAIL_FEATS, 0))
+        self._setup_sparse_smooth_params(**kwargs)
+        self._initialize_deque()
 
         # after we do optimization, we need these params to get our selection going sort of thing.
         self._selection_threshold = kwargs.pop("threshold_selection", 0.5)
@@ -620,6 +614,26 @@ class JointConvexFeatureSelector(FeatureSelector):
 
 
         self.determine_change_features(C_mat, Q_diag)
+    
+    def _initialize_deque(self):
+
+        self._curr_prior_deque = collections.deque()
+        # we enque the prior feature score
+        for i in range(self._num_lags):
+            self._curr_prior_deque.appendleft(np.ones((self.N_TOTAL_AVAIL_FEATS)))
+
+        self._next_disc_memory = np.ones((self.N_TOTAL_AVAIL_FEATS, self._num_lags))
+
+        print("initialized memory deque with length of ", len(self._curr_prior_deque))
+
+    def _setup_sparse_smooth_params(self, **kwargs):
+
+        # the stuff for dual objective feature selection
+        self._sparsity_coef = kwargs.pop('sparsity_coef', 1)
+        self._smoothness_coef = kwargs.pop("smoothness_coef", 0.5)
+        self._num_lags = kwargs.pop("num_of_lags", 5)
+        self._alpha = kwargs.pop("past_batch_decay_factor", 0.9)
+        
 
     def determine_change_features(self, obs_c_mat, noise_q_mat):
 
@@ -636,16 +650,11 @@ class JointConvexFeatureSelector(FeatureSelector):
        print("joint_sparseness_sparseness: ", self._next_disc_memory.shape, "num_lags",  self._num_lags)
 
        selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
-            selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
-       selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
                                                                 diag_noise_q_mat, 
-                                                                    diag_noise_q_mat, 
-                                                                diag_noise_q_mat, 
-                                                                self._sparsity_coef, 
-                                                                    self._sparsity_coef, 
                                                                 self._sparsity_coef, 
                                                                 self._smoothness_coef,
                                                                 self._next_disc_memory)
+                                                                
        print("doing joint smooth sparse optimization at batch ", self.feature_measure_count)
 
 
