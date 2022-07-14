@@ -591,6 +591,7 @@ class JointConvexFeatureSelector(FeatureSelector):
 
 
         self._setup_sparse_smooth_params(**kwargs)
+        self._setup_smooth_batch_params(**kwargs)
         self._initialize_deque()
 
         
@@ -617,7 +618,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         smoothed_c_mat, smoothed_q_mat = self._apply_smooth_batch(C_mat, Q_diag)
 
 
-        self.determine_change_features(C_mat, Q_diag)
+        self.determine_change_features(smoothed_c_mat, smoothed_q_mat)
     
     def _initialize_deque(self):
 
@@ -644,7 +645,9 @@ class JointConvexFeatureSelector(FeatureSelector):
     def _apply_smooth_batch(self,c_mat, q_mat):
 
         if self.feature_measure_count > 1:
-            smoothed_C_mat = (1 - self.sb_rho) * self._prior_smoothed_c_mat + self.sb_rho * c_mat
+
+            print("applied feature smooth batch in here", self.feature_measure_count)
+            smoothed_c_mat = (1 - self.sb_rho) * self._prior_smoothed_c_mat + self.sb_rho * c_mat
             smoothed_q_mat = (1 - self.sb_rho) * self._prior_smoothed_q_mat + self.sb_rho * q_mat
         else:
             smoothed_c_mat = c_mat
@@ -654,7 +657,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         self._prior_smoothed_c_mat = np.copy(smoothed_c_mat)
         self._prior_smoothed_q_mat = np.copy(smoothed_q_mat)
 
-        return (smoothed_C_mat, smoothed_q_mat)
+        return (smoothed_c_mat, smoothed_q_mat)
 
     def determine_change_features(self, obs_c_mat, noise_q_mat):
 
