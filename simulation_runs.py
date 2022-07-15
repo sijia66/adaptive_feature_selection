@@ -823,7 +823,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         
         aopy.data.save_hdf(data_dump_folder, file_name, kwargs_exps[i], data_group="/feature_selection", append = True)
         
-        with tables.open_file(file_name, mode = 'r') as f: print(f)
+        #with tables.open_file(file_name, mode = 'r') as f: print(f)
         
         try:
             d,m = aopy.preproc.parse_bmi3d(data_dump_folder, files)
