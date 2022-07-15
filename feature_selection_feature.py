@@ -28,6 +28,7 @@ state_indices = [X_POS_STATE_IND,
                  Y_VEL_STATE_IND]
 state_names = ['x pos ', 'y pos', 'x vel', 'y vel']
 
+INIITIAL_Q_VAL = 1e4
 
 class FeatureTransformer():
     SUPPORTED_METHODS = [
@@ -144,6 +145,7 @@ class FeatureSelector():
         #history of featrues
         self.used_C_mat = np.zeros((self.n_active_feats, self.n_states))
         self.used_Q_diag = np.zeros(self.n_active_feats)
+        self.used_Q = np.ones((self.n_active_feats, self.n_active_feats)) * INIITIAL_Q_VAL
         self.used_K_mat = np.zeros((self.n_states, self.n_active_feats)) #this is flipped of course.
 
         print(f'feature selector: add initial decoder weights')
@@ -235,6 +237,12 @@ class FeatureSelector():
         self.used_Q_diag[self._prev_feat_set] = np.copy(np.diag(target_decoder.filt.Q))
         transformed_Q_diag = self.used_Q_diag[self._active_feat_set]
         transformed_Q = np.matrix(np.diag(transformed_Q_diag))
+
+        # update the entire matrix
+        # assume prev_set had channel/neuron indices
+        self.used_Q[np.ix_(self._prev_feat_set, self._prev_feat_set)] = np.copy(target_decoder.filt.Q)
+        transformed_Q_full = self.used_Q[np.ix_(self._active_feat_set, self._active_feat_set)]
+        transformed_Q = np.matrix(transformed_Q_full)
         
         #use the updated C,Q matrices to update the decoder
         if debug:
