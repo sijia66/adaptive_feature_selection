@@ -10,7 +10,7 @@ exp_types_to_run = ['joint_convex']
 total_exp_time = 300# in seconds
 N_NEURONS = 128
 
-
+ROUND_DECIMALS = 3
 
 
 if "lasso" in exp_types_to_run:
@@ -85,30 +85,42 @@ if "joint_convex" in exp_types_to_run:
 
     # noise scan
     data_dump_folder = \
-    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/joint_smoothness_sparsity/'
+    '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/smoothness_scan/'
     
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
 
-    print("********************************************")
-    print("********************************************")
-    print("********************************************")
-    print(f'running experiment convex feature selection')
-    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                        data_dump_folder = data_dump_folder,
-                        norm_val= [mean_first_peak, std_of_peaks],
-                        norm_var_2= [mean_second_peak, std_of_peaks],
-                        train_high_SNR_time = 10, #  60 batches or  1200 times)
-                        FEATURE_SELETOR_TYPE='joint_convex',
-                        threshold_selection = 0.5,
-                        objective_offset = 1,
-                        sparsity_coef = 0.09,
-                        smoothness_coef = 0.1,
-                        num_of_lags = 4,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
-                        past_batch_decay_factor = 0.2,
-    )
-    print("********************************************")
-    print("********************************************")
-    print("********************************************")
+    #sparsity_array = np.arange(0.05, 0.15, 0.01)
+    sparsity_array = [0.1]
+    #smoothness_array = np.arange(0.05, 0.1, 0.05)
+    
+    smoothness_array = [0]
+
+    for sparsity_val in sparsity_array:
+        for smoothness_val in smoothness_array:
+
+            # no one can escape the beauty of python one-liner, granted at the expense of line width
+            sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
+            
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
+            print(f'running experiment convex feature selection')
+            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                data_dump_folder = data_dump_folder,
+                                norm_val= [mean_first_peak, std_of_peaks],
+                                norm_var_2= [mean_second_peak, std_of_peaks],
+                                train_high_SNR_time = 10, #  60 batches or  1200 times)
+                                FEATURE_SELETOR_TYPE='joint_convex',
+                                threshold_selection = 0.5,
+                                objective_offset = 1,
+                                sparsity_coef = sparsity_val,
+                                smoothness_coef = smoothness_val,
+                                num_of_lags = 4,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+                                past_batch_decay_factor = 0.2,
+            )
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
