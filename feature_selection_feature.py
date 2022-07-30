@@ -14,6 +14,7 @@ from icecream import ic
 import copy
 import time #for sync stuff c
 
+import aopy
 FRAME_RATE = 60
 
 # some conventions as we go down the loop
@@ -89,6 +90,42 @@ class TransformerBatchToFit(FeatureTransformer):
         ]
         
         super().__init__(proc_meth_arg, *args, **kwargs)
+
+
+class EncoderChanger():
+
+    debug = True
+
+    def __init__(self, *args, **kwargs) -> None:
+
+        # set up encoder weights saving
+        self._encoder_C_list_cycle_by_feature_by_states = []
+
+        # initial encoder set up
+
+        super().__init__(*args, **kwargs)
+
+    # def record_encoder_params(self, encoder):
+
+    #     #self._encoder_C_list_cycle_by_feature_by_states.append(encoder.C.copy())
+
+    #     if self.debug:
+    #         print("have stored this number of cycles encoder c matrix", len(self._encoder_C_list_cycle_by_feature_by_states))
+
+    # def save_feature_params(self):
+
+
+    #     #prepare data dict
+
+    #     data_dict = {
+    #         'C_mat_cycle_by_num_by_states': self._encoder_C_list_cycle_by_feature_by_states,
+    #     }
+
+    #     #save to data dict
+    #     #mk temporary directory 
+    #     import tempfile
+    #     print(f'saving feature selection file name to {self.h5file.name}')
+    #     aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True, debug=True)
 
 
 class FeatureSelector():
@@ -289,7 +326,7 @@ class FeatureSelector():
         self._used_K_mat_list.append(np.copy(self.used_K_mat))
 
     def save_feature_params(self):
-        import aopy
+
 
         #prepare data dict
 
@@ -1321,6 +1358,7 @@ def run_exp_loop(exp,  **kwargs):
         #actually output
         exp.task_data['spike_counts'] = feature_data['spike_counts']
         exp.k_mat_params.append(np.copy(exp.decoder.filt.K))
+
 
 
         #save the decoder_state

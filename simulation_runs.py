@@ -516,6 +516,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     (percent_of_count_in_a_list, no_noise_neuron_ind, noise_neuron_ind, no_noise_neuron_list, noise_neuron_list)= \
         generate_binary_features_by_thresholding(percent_high_SNR_noises, norm_val, norm_var_2, feature_weights)
 
+
+
     #set up the encoder
     from features.simulation_features import SimCosineTunedEncWithNoise
     #set up intention feedbackcontroller
@@ -524,6 +526,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     feats.append(SimCosineTunedEncWithNoise)
     feats_2.append(SimIntentionLQRController)
     feats_2.append(SimCosineTunedEncWithNoise)
+
+
 
     ##########################################################################################################################
     # ## decoder setup
@@ -575,9 +579,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     ############################################################################################################################
     # ## feature selector setup
-    from feature_selection_feature import FeatureTransformer, TransformerBatchToFit
     from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector
-    from feature_selection_feature import ReliabilityFeatureSelector
 
 
     #pass the real time limit on clock
@@ -613,6 +615,12 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         ('transpose', None ),
     ]
 
+    ######################################################################################################################
+    # feature selector set up
+
+    from feature_selection_feature import EncoderChanger
+    feats.append(EncoderChanger)
+    feats_2.append(EncoderChanger)
 
 
     print('kwargs will be updated in a later time')
@@ -652,6 +660,10 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     feats_2.append(SimClockTick)
     feats_2.append(SimTime)
+
+
+    # from feature_selection_feature import ChangeEncoder
+    # feats.append(ChangeEncoder)
 
     kwargs_exps = list()
 
@@ -719,6 +731,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         e = Exp(s, **kwargs_exps[i])
         exps.append(e)
 
+        print(f"finished instantiated experiment {i}\n\n\n")
+
 
     exps_np  = np.array(exps, dtype = 'object')
 
@@ -736,6 +750,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         np.random.seed(random_seed)
         
         e.init()
+
+        print("finished initialize experiement ", i)
 
         # save the decoder if it is the first one. 
         if i == 0:
