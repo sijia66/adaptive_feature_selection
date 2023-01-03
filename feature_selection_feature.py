@@ -9,7 +9,6 @@ from features import SaveHDF
 
 from weights import change_target_kalman_filter_with_a_C_mat
 #import 
-from icecream import ic
 
 import copy
 import time #for sync stuff c

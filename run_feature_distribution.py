@@ -22,8 +22,7 @@ rhos = [0, 0.5, 1] # this determines what fraction of old data can be incorporat
 rhos = [0.5]
 batches = [160, 320]                                                                                                                                                                                                                                                                                                                                                            
 
-data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_03_clda_scan/'
+data_dump_folder = '/home/sijia66/data/'
 mean_first_peak = 50
 mean_second_peak = 50
 std_of_peaks = 10
@@ -88,9 +87,8 @@ if "noise_scan" in exp_types_to_run:
 ######################################################################
 # actually running the experiments
 # data saving stuff
-data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_17_gaussian_peaks/'
 
+data_dump_folder = '/home/sijia66/'
 # gap difference
 # exp_type = 'gap_difference'
 mean_first_peak = 50
