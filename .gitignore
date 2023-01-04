@@ -2,6 +2,7 @@
 .vscode/settings.json
 *.pyc
 *.h5
+*.log
 wo_feature selection
 
 !afs_clda_more_neurons_different_neurons_sfn.ipynb

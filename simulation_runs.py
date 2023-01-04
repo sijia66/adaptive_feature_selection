@@ -439,6 +439,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
                            FEATURE_SELETOR_TYPE = "convex",
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
                            random_seed = 0,
+                           RANDOM_INITIAL_FEATURES:bool = True,
                            **kwargs
                            ):
     
@@ -702,10 +703,11 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
 
     for k in kwargs_exps_start:
-        
-        k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-        k['init_feat_set'][no_noise_neuron_list] = True
-
+        if RANDOM_INITIAL_FEATURES:
+            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+        else:
+            k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
+            k['init_feat_set'][no_noise_neuron_list] = True
 
     kwargs_exps.extend(kwargs_exps_add)
     kwargs_exps.extend(kwargs_exps_start)
