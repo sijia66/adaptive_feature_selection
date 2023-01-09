@@ -172,8 +172,9 @@ class FeatureSelector():
         else:
             self._active_feat_set = np.full(self.n_active_feats, True, dtype = bool)
 
-        self._prev_feat_set = np.full(self.n_active_feats, True, dtype = bool)
-
+        # initialize the active feature set
+        self._prev_feat_set = np.full(self.n_active_feats, False, dtype = bool)
+        self._prev_feat_set[self._active_feat_set] = True
 
         self._active_feat_set_list = [np.copy(self._active_feat_set)]
         print(f'feature init: {self._active_feat_set_list}')
@@ -252,7 +253,7 @@ class FeatureSelector():
 
         return (C_hat, Q_hat)
 
-    def select_decoder_features(self, target_decoder, debug = False):
+    def select_decoder_features(self, target_decoder, debug = True):
         '''
         
         '''
@@ -261,22 +262,36 @@ class FeatureSelector():
  
 
         #update the used C matrix  with the current values 
-        if debug:
-            print(self.used_C_mat[self._prev_feat_set, : ].shape )
-            print(target_decoder.filt.C.shape)
-            
-            
-        self.used_C_mat[self._prev_feat_set, : ] = np.copy(target_decoder.filt.C)
+        if True:
+            print("select_decoder_features:,", self.used_C_mat[self._prev_feat_set, : ].shape )  
+            print(f"select_decoder_features: {target_decoder.filt.C.shape}")
+        
+        # this is only for the first time
+        if self.used_C_mat[self._prev_feat_set, : ].shape != target_decoder.filt.C.shape:
+            self.used_C_mat[self._prev_feat_set, : ] = np.copy(target_decoder.filt.C[self._prev_feat_set, :])
+        else: 
+            self.used_C_mat[self._prev_feat_set, : ] = np.copy(target_decoder.filt.C)
+        
         transformed_C =  np.matrix(self.used_C_mat[self._active_feat_set, :])
 
         #only update diagnoal matrix
-        self.used_Q_diag[self._prev_feat_set] = np.copy(np.diag(target_decoder.filt.Q))
+        # again, this is only for the first time
+        if self.used_Q_diag[self._prev_feat_set].shape != np.diag(target_decoder.filt.Q).shape:
+            self.used_Q_diag[self._prev_feat_set] = np.copy(np.diag(target_decoder.filt.Q)[self._prev_feat_set])
+
+            self.used_Q[np.ix_(self._prev_feat_set, self._prev_feat_set)] = \
+            np.copy(target_decoder.filt.Q[np.ix_(self._prev_feat_set, self._prev_feat_set)])
+            
+        else:
+            self.used_Q_diag[self._prev_feat_set] = np.copy(np.diag(target_decoder.filt.Q))
+            self.used_Q[np.ix_(self._prev_feat_set, self._prev_feat_set)] = np.copy(target_decoder.filt.Q)
+        
         transformed_Q_diag = self.used_Q_diag[self._active_feat_set]
         transformed_Q = np.matrix(np.diag(transformed_Q_diag))
 
         # update the entire matrix
         # assume prev_set had channel/neuron indices
-        self.used_Q[np.ix_(self._prev_feat_set, self._prev_feat_set)] = np.copy(target_decoder.filt.Q)
+
         transformed_Q_full = self.used_Q[np.ix_(self._active_feat_set, self._active_feat_set)]
         transformed_Q = np.matrix(transformed_Q_full)
         
@@ -671,7 +686,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         for i in range(self._num_lags):
             self._curr_prior_deque.appendleft(np.ones((self.N_TOTAL_AVAIL_FEATS)))
 
-        self._next_disc_memory = np.ones((self.N_TOTAL_AVAIL_FEATS, self._num_lags))
+        self._next_disc_memory = np.ones((self.N_TOTAL_AVAIL_FEATS, self._num_lags)) * 0.5
 
         print("initialized memory deque with length of ", len(self._curr_prior_deque))
 
@@ -709,6 +724,8 @@ class JointConvexFeatureSelector(FeatureSelector):
            return
 
         # bad software practice, has to assume access to the kf c decoder
+        
+       print("determine change features", obs_c_mat.shape, noise_q_mat.shape)
 
        obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
        diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
