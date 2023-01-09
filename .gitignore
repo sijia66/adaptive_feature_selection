@@ -1,4 +1,5 @@
 /.ipynb_checkpoints
+.ipynb_checkpoints
 .vscode/settings.json
 *.pyc
 *.h5
