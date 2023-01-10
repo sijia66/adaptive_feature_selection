@@ -682,13 +682,19 @@ class JointConvexFeatureSelector(FeatureSelector):
     def _initialize_deque(self):
 
         self._curr_prior_deque = collections.deque()
+        
+        temp_selection_scores = np.zeros(self.N_TOTAL_AVAIL_FEATS)
+        temp_selection_scores[self._active_feat_set] = 1.0
+        
         # we enque the prior feature score
         for i in range(self._num_lags):
-            self._curr_prior_deque.appendleft(np.ones((self.N_TOTAL_AVAIL_FEATS)))
+            self._curr_prior_deque.appendleft(temp_selection_scores)
 
-        self._next_disc_memory = np.ones((self.N_TOTAL_AVAIL_FEATS, self._num_lags)) * 0.5
+        self._next_disc_memory = np.repeat(temp_selection_scores[:,np.newaxis], self._num_lags, axis = 1)
 
+        print("initialzied memoery deque", temp_selection_scores.shape)
         print("initialized memory deque with length of ", len(self._curr_prior_deque))
+        print("initialized next disc memory with shape of ", self._next_disc_memory.shape)
 
     def _setup_sparse_smooth_params(self, **kwargs):
 
@@ -750,6 +756,7 @@ class JointConvexFeatureSelector(FeatureSelector):
            self._curr_prior_deque.pop()
 
        # set it up so 
+       print("curr_prior_deque", np.array(self._curr_prior_deque).shape)
        self._next_disc_memory = np.array(self._curr_prior_deque).T
        self._next_disc_memory = self._alpha * self._next_disc_memory
 
