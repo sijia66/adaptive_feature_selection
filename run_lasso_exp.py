@@ -148,25 +148,26 @@ if "joint_convex_init_feature" in exp_types_to_run:
     # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
 
     data_dump_folder = \
-    '/home/sijia66/data/'
+    '/home/sijia66/data/part2_random_start_sparsity_smoothness_scan/'
     
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
-
-    #sparsity_array = np.arange(0.05, 0.15, 0.01)
-    # smoothness_array = np.arange(0, 0.15, 0.025)
-    sparsity_array = [0.11]
-
-    smoothness_array = [0.05]
-    num_lags_array = [3]
-    
+  
+        
+    sparsity_array = [0.06]
+    # sparsity_array = np.arange(0.05, 0.15, 0.01)
     # decay_factor_array  = np.arange(0, 1.2, 0.2)
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
-    decay_factor_array = [0.5]
+    decay_factor_array = [0.2]
+
+
+    #smoothness_array =  np.arange(0.025, 0.15, 0.025)
+    smoothness_array = [0.1]
+    num_lags_array = [3]
     
-    random_seeds = [0,1,2]
+    random_seeds = [0]
 
 
     for sparsity_val in sparsity_array:
