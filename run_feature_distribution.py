@@ -34,7 +34,7 @@ if "clda_scan" in exp_types_to_run:
 
             print("********************************************")
             print("********************************************")
-            print("********************************************")
+            print("**************************************  ******")
             print(f'running experiment with clda rho of {rho} and a batch length of {batch_len}')
             run_iter_feat_addition(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
                                 rho = rho, 
@@ -88,13 +88,16 @@ if "noise_scan" in exp_types_to_run:
 # actually running the experiments
 # data saving stuff
 
-data_dump_folder = '/home/sijia66/'
+data_dump_folder =  \
+'/home/sijia66/data/part0_gap_std_difference_random/'
 # gap difference
 # exp_type = 'gap_difference'
 mean_first_peak = 50
-std_of_peaks = 10
-mean_differences = np.arange(50, 60,  step = 10 )
-
+std_of_peaks = 3
+mean_differences = np.arange(0, 70,  step = 10 )
+   
+mean_differences = [60]
+ 
 if 'gap_difference' in exp_types_to_run:
     for mean_diff in mean_differences:
         mean_second_peak = mean_first_peak + mean_diff
@@ -117,8 +120,7 @@ if 'gap_difference' in exp_types_to_run:
 
 ###################################################################################3
 data_dump_folder = \
-'/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/gaussian_peaks/2022_02_01_gaussian_stds/'
-
+'/home/sijia66/data/part0_gap_std_difference_random/'
 mean_first_peak = 50
 mean_second_peak = 100
 std_differences = np.arange(10, 60, step =  10)

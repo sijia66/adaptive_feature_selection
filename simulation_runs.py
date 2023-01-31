@@ -53,6 +53,7 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
                            UPDATER_TYPE = 'smooth_batch' , #none or "smooth_batch"
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
                            random_seed = 0,
+                           RANDOM_INITIAL_FEATURES = True
                            ):
     
 
@@ -277,13 +278,20 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
 
     for k in kwargs_exps_add:
         
-        k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-        k['init_feat_set'][no_noise_neuron_list] = True
+        if RANDOM_INITIAL_FEATURES:
+            np.random.seed(random_seed)
+            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+        else:
+            k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
+            k['init_feat_set'][no_noise_neuron_list] = True
 
     for k in kwargs_exps_start:
-        
-        k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-        k['init_feat_set'][no_noise_neuron_list] = True
+        if RANDOM_INITIAL_FEATURES:
+            np.random.seed(random_seed)
+            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+        else:
+            k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
+            k['init_feat_set'][no_noise_neuron_list] = True
 
 
     kwargs_exps.extend(kwargs_exps_add)
@@ -707,9 +715,14 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
             k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
 
     for k in kwargs_exps_start:
-
-        k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-        k['init_feat_set'][no_noise_neuron_list] = True
+        if RANDOM_INITIAL_FEATURES:
+            np.random.seed(random_seed)
+            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+        else:
+            k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
+            k['init_feat_set'][no_noise_neuron_list] = True
+            
+            
 
     kwargs_exps.extend(kwargs_exps_add)
     kwargs_exps.extend(kwargs_exps_start)
