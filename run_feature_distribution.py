@@ -4,14 +4,14 @@ import numpy as np
 exp_types = ['gap_difference', 'std_difference', 'single_target_reach','noise_scan']
 exp_type = 'std_difference'
 
-exp_types_to_run = ['gap_difference']
+exp_types_to_run = ['removal_gap_difference']
 
 N_NEURONS = 128
 
 ######################################################################
 # generic task information
-from simulation_runs import run_iter_feat_addition
-total_exp_time = 1200 # in seconds
+from simulation_runs import run_iter_feat_addition, run_iter_feat_selection
+total_exp_time = 900 # in seconds
 
 #####################################################################
 # run clda scan
@@ -122,8 +122,8 @@ if 'gap_difference' in exp_types_to_run:
 data_dump_folder = \
 '/home/sijia66/data/part0_gap_std_difference_random/'
 mean_first_peak = 50
-mean_second_peak = 100
-std_differences = np.arange(10, 60, step =  10)
+mean_second_peak = 50
+std_differences = [27]
 
 if 'std_difference' in exp_types_to_run:
     for std_val in std_differences:
@@ -135,6 +135,74 @@ if 'std_difference' in exp_types_to_run:
 
         print(f'running experiment with second peak at {mean_second_peak}')
         run_iter_feat_addition(total_exp_time = total_exp_time, n_neurons=N_NEURONS,
+                            data_dump_folder = data_dump_folder,
+                            norm_val= [mean_first_peak, std_of_peaks],
+                            norm_var_2= [mean_second_peak, std_second_peak],
+                            train_high_SNR_time = 60 #  60 batches or  1200 times)
+        )
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+
+###################################################################################
+
+data_dump_folder = \
+'/home/sijia66/data/part0_removal_gap_std_difference_random/'
+mean_first_peak = 100 
+mean_second_peak = 50
+std_differences = [3]
+
+if 'removal_std_difference' in exp_types_to_run:
+    for std_val in std_differences:
+        std_second_peak = std_val
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+        print(f'running experiment with second peak at {mean_second_peak}')
+        run_iter_feat_selection(
+                            feature_selection_mode= "IterativeRemoval",
+                            initial_feature_setup= "all",  
+                            total_exp_time = total_exp_time, n_neurons=N_NEURONS,
+                            data_dump_folder = data_dump_folder,
+                            norm_val= [mean_first_peak, std_of_peaks],
+                            norm_var_2= [mean_second_peak, std_second_peak],
+                            train_high_SNR_time = 60 #  60 batches or  1200 times)
+        )
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+
+
+
+if 'removal_gap_difference' in exp_types_to_run:
+     
+    data_dump_folder = \
+    '/home/sijia66/data/part0_removal_gap_std_difference_random_v2/'
+    mean_first_peak = 100 
+    mean_differences = np.arange(-50,  10,step = 10 )
+    # mean_differences = [ -10]
+    std_differences = [3]
+    
+    std_of_peaks = std_second_peak = 3
+    
+    for mean_diff in mean_differences:
+        mean_second_peak = mean_first_peak + mean_diff
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+        print(f'running experiment with second peak at {mean_second_peak}')
+        run_iter_feat_selection(
+                            feature_selection_mode= "IterativeRemoval",
+                            initial_feature_setup= "all",  
+                            total_exp_time = total_exp_time, n_neurons=N_NEURONS,
                             data_dump_folder = data_dump_folder,
                             norm_val= [mean_first_peak, std_of_peaks],
                             norm_var_2= [mean_second_peak, std_second_peak],

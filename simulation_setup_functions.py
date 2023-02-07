@@ -265,3 +265,56 @@ def get_KF_C_Q_from_decoder(first_decoder):
     np.fill_diagonal(target_Q, diag_val)
     
     return (target_C, target_Q)
+
+
+
+def config_feature_selector(FEATURE_SELECTOR_TYPE, feats, feats_2, **kwargs):
+    
+        # ## feature selector setup
+    from feature_selection_feature import FeatureTransformer, TransformerBatchToFit
+    from feature_selection_feature import FeatureSelector, LassoFeatureSelector, SNRFeatureSelector
+    from feature_selection_feature import IterativeFeatureSelector, IterativeFeatureRemoval
+    from feature_selection_feature import ReliabilityFeatureSelector
+
+
+    #pass the real time limit on clock
+    feats.append(FeatureSelector)
+    
+    if FEATURE_SELECTOR_TYPE == 'IterativeAddition':
+        feats_2.append(IterativeFeatureSelector)
+
+        feature_x_meth_arg = [
+            ('transpose', None ),
+        ]
+
+        kwargs_feature = dict()
+        kwargs_feature = {
+            'transform_x_flag':False,
+            'transform_y_flag':False,
+            'n_starting_feats': kwargs["n_neurons"],
+            'n_states':  7,
+            "train_high_SNR_time": kwargs["train_high_SNR_time"],
+        }
+
+        print('kwargs will be updated in a later time')
+        print(f'the feature adaptation project is tracking {kwargs_feature.keys()} ')
+    elif FEATURE_SELECTOR_TYPE == 'IterativeRemoval':
+        
+        feats_2.append(IterativeFeatureRemoval)
+        feature_x_meth_arg = [
+            ('transpose', None ),
+        ]
+
+        kwargs_feature = dict()
+        kwargs_feature = {
+            'transform_x_flag':False,
+            'transform_y_flag':False,
+            'n_starting_feats': kwargs["n_neurons"],
+            'n_states':  7,
+            "train_high_SNR_time": kwargs["train_high_SNR_time"], 
+            "target_feature_set": kwargs['target_feature_set']
+        }
+    else:
+        raise ValueError('Unsupported feature selector type')
+
+    return (feats, feats_2, feature_x_meth_arg, kwargs_feature)

@@ -323,7 +323,7 @@ class FeatureSelector():
         self.decoder_change_flag = False
     
     def record_feature_active_set(self, target_decoder):
-        self._active_feat_set_list.append(np.copy(self._active_feat_set))
+        self._active_feat_set_list.append(self._active_feat_set.copy())
         self.used_C_mat[self._active_feat_set,: ] = np.copy(target_decoder.filt.C)
         self._used_C_mat_list.append(np.copy(self.used_C_mat))
 
@@ -1027,6 +1027,7 @@ class IterativeFeatureRemoval(FeatureSelector):
     def determine_change_features(self):
        
        #assume we selected the first few features
+
 
        if self.feature_measure_count <= self._change_at_batch:
            return
