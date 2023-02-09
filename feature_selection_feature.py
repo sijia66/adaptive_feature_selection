@@ -1143,6 +1143,8 @@ class LassoFeatureSelector(FeatureSelector):
         return self.selected_feature_indices
 
     def save_feature_params(self):
+        
+        super().save_feature_params()
         import aopy
 
         #prepare data dict

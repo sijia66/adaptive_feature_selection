@@ -831,18 +831,10 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     ##################################################################################
     # set up file names for comparision
-    exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' for s in percent_high_SNR_noises]
-
-    exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' \
-            for s in percent_high_SNR_noises]
-
-
-    exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' \
-            for s in percent_high_SNR_noises]
-
-
-    exp_conds.extend(exp_conds_add)
-    exp_conds.extend(exp_conds_keep)
+    
+    exp_conds = config_exp_conds(FEATURE_SELETOR_TYPE, random_seed, rho, batch_len,
+                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
+                     **kwargs)
 
     NUM_NOISES = len(percent_high_SNR_noises)
 
@@ -965,7 +957,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     ############################################################################################################################
     # ## feature selector setup
-    from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector
+    from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector, LassoFeatureSelector
 
 
     #pass the real time limit on clock
@@ -993,7 +985,10 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         kwargs_feature["num_of_lags"] = kwargs["num_of_lags"]
         kwargs_feature["past_batch_decay_factor"] = kwargs["past_batch_decay_factor"]
         kwargs_feature["threshold_selection"] = kwargs["threshold_selection"]
-
+    elif FEATURE_SELETOR_TYPE == "lasso":
+        feats_2.append(LassoFeatureSelector)
+        kwargs_feature['objective_offset'] = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs else 1.0
+        kwargs_feature['adaptive_lasso_flag'] = kwargs["adaptive_lasso_flag"] if 'adaptive_lasso_flag' in kwargs else False
     else:
         raise Exception("Unimplemented feature selector::", FEATURE_SELETOR_TYPE)
 

@@ -318,3 +318,40 @@ def config_feature_selector(FEATURE_SELECTOR_TYPE, feats, feats_2, **kwargs):
         raise ValueError('Unsupported feature selector type')
 
     return (feats, feats_2, feature_x_meth_arg, kwargs_feature)
+
+
+def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
+                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
+                     **kwargs):
+    
+    if FEATURE_SELECTOR_TYPE  in  ["convex", "joint_convex"]:
+        exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' for s in percent_high_SNR_noises]
+
+        exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' \
+                for s in percent_high_SNR_noises]
+
+
+        exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' \
+                for s in percent_high_SNR_noises]
+
+
+        exp_conds.extend(exp_conds_add)
+        exp_conds.extend(exp_conds_keep)
+        
+    elif FEATURE_SELECTOR_TYPE == "lasso":
+        exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}' for s in percent_high_SNR_noises]
+
+        exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}' \
+                for s in percent_high_SNR_noises]
+
+
+        exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}' \
+                for s in percent_high_SNR_noises]
+
+
+        exp_conds.extend(exp_conds_add)
+        exp_conds.extend(exp_conds_keep)
+    else:
+        raise ValueError('Unsupported feature selector type')
+    
+    return exp_conds
