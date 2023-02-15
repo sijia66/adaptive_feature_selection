@@ -2,6 +2,7 @@ import numpy as np
 from numpy.lib.shape_base import expand_dims
 from riglib.bmi.kfdecoder import KalmanFilter
 import statsmodels.api as sm
+import sklearn
 
 
 
@@ -128,3 +129,68 @@ def calc_vector_L2_norm(row_vector: np.array,
     L2_norm_result = np.linalg.norm(row_vector[indices_to_sum])
 
     return L2_norm_result
+
+
+
+
+
+# let's see if we can write the Jaccard score into a function
+def calculate_jaccard_score(feature_vec_a: np.ndarray, feature_vec_b:np.ndarray) -> float:
+    """
+    we try to calcualte the ratio of both true, over both true, not (none of which is true)
+    """
+    
+    assert feature_vec_a.ndim == 1
+    assert feature_vec_a.ndim == 1
+    assert feature_vec_a.size == feature_vec_b.size 
+    
+    n_element =  feature_vec_a.size
+    
+    # the top
+    both_array_true = np.logical_and(feature_vec_a,  feature_vec_b)
+    count_both_true = np.count_nonzero(both_array_true)
+    
+    # then both wrong
+    both_array_false =  np.logical_and(feature_vec_a == False, feature_vec_b == False)
+    count_both_false = np.count_nonzero(both_array_false)
+    
+    return count_both_true / (n_element -  count_both_false)
+
+
+
+    
+    
+    
+def calculate_feature_smoothness(matrix_feature_by_batch:np.ndarray, mode:str = "compare_to_first_batch") ->  np.ndarray:
+    """
+    use jaccard similarity score to compare later feature selection batches to the very first one batch
+    mode: str: incremental between batches
+    """
+    # for now, only support two dim array, the array dim is defined as  feature by batch 
+    assert matrix_feature_by_batch.ndim == 2
+    
+    if mode == "incremental":
+        smoothness_score = np.zeros(matrix_feature_by_batch.shape[1] - 1)
+        for i in range(matrix_feature_by_batch.shape[1] - 1):
+            smoothness_score[i] = sklearn.metrics.jaccard_score(matrix_feature_by_batch[:,i], 
+                                                                matrix_feature_by_batch[:,i+1])
+    else: # otherwise, we compare to the very first one
+        initial_batch = matrix_feature_by_batch[:, 0]
+        smoothness_score = np.zeros(matrix_feature_by_batch.shape[1])
+        for i in range(matrix_feature_by_batch.shape[1]):
+
+            smoothness_score[i] = sklearn.metrics.jaccard_score(matrix_feature_by_batch[:,i], initial_batch)
+
+    return smoothness_score
+    
+    
+def calculate_feature_smoothness_multiple_conditions(matrix_cond_by_feature_by_batch:np.ndarray, **kwargs) -> np.ndarray:
+
+    num_conds, _, _  = matrix_cond_by_feature_by_batch.shape
+
+    smooth_batch_arrays = []
+
+    for i in range(num_conds):
+        smooth_batch_arrays.append(calculate_feature_smoothness(matrix_cond_by_feature_by_batch[i, :, :], **kwargs))
+
+    return np.array(smooth_batch_arrays)
