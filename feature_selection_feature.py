@@ -1054,6 +1054,7 @@ class LassoFeatureSelector(FeatureSelector):
         #param related to lasso, default to 1
         self.current_lasso = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs.keys() else self.DEFAULT_ALPHA
         self.max_iter = kwargs['max_iter'] if 'max_iter' in kwargs.keys() else self.DEFAULT_MAX_ITERATION
+        self.current_lasso_threshold = kwargs['lasso_threshold'] if 'lasso_threshold' in kwargs else 1.0
 
         self._adaptive_lasso_flag = kwargs['adaptive_lasso_flag'] if 'adaptive_lasso_flag' in kwargs else False
         self._init_lasso_regression(self.current_lasso, 
@@ -1092,11 +1093,35 @@ class LassoFeatureSelector(FeatureSelector):
         target_states = [3,5] # 3 for x_vel and 5 for y_vel
         
         #fitted results to lasso_model._coef
-        self.lasso_model.fit(feature_matrix, target_matrix[:, target_states])
+        self.lasso_model.fit(target_matrix[:, target_states], feature_matrix)
         self.measure_ready = True
         
         #save to the history of measures
         self.history_of_weights.append(self.get_feature_weights())
+        
+        self.determine_change_features()
+    
+    def determine_change_features(self):
+
+        if self.feature_measure_count <= self.train_high_SNR_time:
+           return
+
+        weights = self.get_feature_weights()
+        weights_norm = np.linalg.norm(weights, axis=1)
+        # threshold the values and calc the active features.
+        selected_indices = np.argwhere(
+            weights_norm >= self.current_lasso_threshold)
+
+        # we are gonna take the intersection with exisiting features
+        all_selected_features = np.full(
+            self.N_TOTAL_AVAIL_FEATS, False, dtype=bool)
+        all_selected_features[selected_indices] = True
+        # take the intersection of the features
+        self._active_feat_set = all_selected_features
+
+        # set the flags to make these changes effective.
+        self.decoder_change_flag = True
+        self.feature_change_flag = True
     
     def _setup_lasso_alpha_curve(self, **kwargs):
         
@@ -1162,8 +1187,8 @@ class LassoFeatureSelector(FeatureSelector):
         #save to data dict
         #mk temporary directory 
         import tempfile
-        print(f'saving feature selection file name to {self.h5file.name}')
-        aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True)
+        print(f'saving lasso feature selection file name to {self.h5file.name}')
+        aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/lasso_feature_selection", append = True, debug = True)
 
 
 def run_exp_loop(exp,  **kwargs):

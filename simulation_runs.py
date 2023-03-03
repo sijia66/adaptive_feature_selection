@@ -987,7 +987,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         kwargs_feature["threshold_selection"] = kwargs["threshold_selection"]
     elif FEATURE_SELETOR_TYPE == "lasso":
         feats_2.append(LassoFeatureSelector)
-        kwargs_feature['objective_offset'] = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs else 1.0
+        kwargs_feature['lasso_alpha'] = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs else 1.0
+        kwargs_feature['lasso_threshold'] = kwargs['lasso_threshold'] if 'lasso_threshold' in kwargs else 1.0
         kwargs_feature['adaptive_lasso_flag'] = kwargs["adaptive_lasso_flag"] if 'adaptive_lasso_flag' in kwargs else False
     else:
         raise Exception("Unimplemented feature selector::", FEATURE_SELETOR_TYPE)

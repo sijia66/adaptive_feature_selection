@@ -31,6 +31,14 @@ def load_feature_selection_files(data_dump_folder, exp_conds):
             feature_selection_data = aopy.data.load_hdf_group(data_dump_folder, file_name,'feature_selection')
             d['feature_selection'] =  feature_selection_data
             
+            try :
+                lasso_data = aopy.data.load_hdf_group(data_dump_folder, 
+                                                      file_name,
+                                                      'lasso_feature_selection')
+                d['lasso_feature_selection'] = lasso_data
+            except:
+                pass
+            
             exp_data_all.append(d)
             exp_data_metadata_all.append(m)
             

@@ -5,7 +5,7 @@ from simulation_runs import run_convex_selection
 exp_types = ['lasso', 'convex', 'joint_convex', 'joint_convex_init_feature']
 exp_types_to_run = ['lasso']
 
-total_exp_time = 300# in seconds
+total_exp_time = 600# in seconds
 N_NEURONS = 128
 
 ROUND_DECIMALS = 3
@@ -22,23 +22,28 @@ if "lasso" in exp_types_to_run:
     std_of_peaks = 3
 
     lasso_alphas = [0.01, 0.1, 1, 10]
+    lasso_alphas = [20]
     
     norm_val= [mean_first_peak, std_of_peaks]
     norm_var_2= [mean_second_peak, std_of_peaks]
 
     adaptive_lasso = False
+    lasso_thresholds = [0,1,2]
+    # lasso_thresholds = [1,2]
     
     for a in lasso_alphas:
-        run_convex_selection(total_exp_time = total_exp_time, 
-                       data_dump_folder=data_dump_folder,
-                       FEATURE_SELETOR_TYPE='lasso',
-                       RANDOM_INITIAL_FEATURES = True,
-                       lasso_alpha = a, 
-                       adaptive_lasso = adaptive_lasso,
-                       n_neurons = N_NEURONS,
-                       norm_val= [mean_first_peak, std_of_peaks],
-                       norm_var_2= [mean_second_peak, std_of_peaks],
-                       train_high_SNR_time  = 10, #  60 batches or  1200 times)
+        for lasso_threshold in lasso_thresholds:
+            run_convex_selection(total_exp_time = total_exp_time, 
+                        data_dump_folder=data_dump_folder,
+                        FEATURE_SELETOR_TYPE='lasso',
+                        RANDOM_INITIAL_FEATURES = True,
+                        lasso_alpha = a, 
+                        lasso_threshold = lasso_threshold,
+                        adaptive_lasso = adaptive_lasso,  
+                        n_neurons = N_NEURONS,   
+                        norm_val= [mean_first_peak, std_of_peaks],
+                        norm_var_2= [mean_second_peak, std_of_peaks],
+                        train_high_SNR_time  = 10, #  60 batches or  1200 times)
                         )
 
 
