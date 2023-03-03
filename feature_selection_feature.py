@@ -703,6 +703,8 @@ class JointConvexFeatureSelector(FeatureSelector):
         self._smoothness_coef = kwargs.pop("smoothness_coef", 0.5)
         self._num_lags = kwargs.pop("num_of_lags", 5)
         self._alpha = kwargs.pop("past_batch_decay_factor", 0.9)
+        
+        self._number_of_features = kwargs.pop("number_of_features", None)
     
     def _setup_smooth_batch_params(self, **kwargs):
         self.sb_rho = kwargs.pop('sb_rho', 0.5)
@@ -744,7 +746,8 @@ class JointConvexFeatureSelector(FeatureSelector):
                                                                 diag_noise_q_mat, 
                                                                 self._sparsity_coef, 
                                                                 self._smoothness_coef,
-                                                                self._next_disc_memory)
+                                                                self._next_disc_memory, 
+                                                                number_of_features = self._number_of_features,)
                                                                 
        print("doing joint smooth sparse optimization at batch ", self.feature_measure_count)
 
@@ -817,7 +820,8 @@ class JointConvexFeatureSelector(FeatureSelector):
                                             Q_diag, 
                                             sparsity_coef,
                                             smoothness_coef,
-                                            prior_matrix):
+                                            prior_matrix,
+                                            number_of_features = None):
 
         num_features, num_states = C.shape
 
@@ -826,24 +830,34 @@ class JointConvexFeatureSelector(FeatureSelector):
         ones_prior = make_a_vector_of_ones(prior_matrix, mode = "same_number_as_col")
         
         
-        Q_diag_inv =  np.linalg.inv(Q_diag)
+        Q_diag_inv =  np.linalg.inv(Q_diag)  
 
         # set up the problem
         theta = cp.Variable((num_features,1))
 
         # add a condition that if the prior matrix is none, just ignore the smoothness_coef
         if prior_matrix.shape[1] > 0:
-
-            feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
-                                                    + sparsity_coef * theta.T @ ones_d  \
-                                                    - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
-        
+            
+            if number_of_features is not None:
+                feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
+                                        - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
+            else:
+                feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
+                                                        + sparsity_coef * theta.T @ ones_d  \
+                                                        - smoothness_coef * theta.T @ prior_matrix @ ones_prior )
         else: 
             feature_selection_objective = cp.Minimize(-cp.log_det(C.T @ Q_diag_inv @cp.diag(theta) @ C) \
                                         + sparsity_coef * 0.1 * theta.T @ ones_d)
             print("only doing sparsity objective")
 
-        constraints = [theta >=0.0,  theta <= 1]
+        if number_of_features is not None:
+            print("doing feature selection with number of features", number_of_features)
+            constraints = [theta >=0.0,  theta <= 1, 
+                        cp.sum(theta) <=  number_of_features]
+        else:
+            constraints = [theta >=0.0,  theta <= 1]
+        
+        # we formulate the problem
         feature_selection_problem = cp.Problem(feature_selection_objective, constraints)
 
         # solve the problem 

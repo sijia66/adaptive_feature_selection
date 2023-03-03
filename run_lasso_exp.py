@@ -3,7 +3,7 @@ from simulation_runs import run_convex_selection
 
 
 exp_types = ['lasso', 'convex', 'joint_convex', 'joint_convex_init_feature']
-exp_types_to_run = ['lasso']
+exp_types_to_run = ['joint_convex_init_feature']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -151,7 +151,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
 
     data_dump_folder = \
-    '/home/sijia66/data/part2_random_start_sparsity_smoothness_scan/'
+    '/home/sijia66/data/part2_random_start_bottleneck_num_features/'
     
     # we set up the neural populations
     mean_first_peak = 50
@@ -171,6 +171,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     num_lags_array = [3]
     
     random_seeds = [0]
+    num_of_features = N_NEURONS // 2 # specify how many features we want to use, or None
 
 
     for sparsity_val in sparsity_array:
@@ -200,6 +201,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
                                             smoothness_coef = smoothness_val,
                                             num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
                                             past_batch_decay_factor = decay_factor,
+                                            number_of_features = num_of_features,
                                             RANDOM_INITIAL_FEATURES=True,
                                             random_seed=random_seed
                                             

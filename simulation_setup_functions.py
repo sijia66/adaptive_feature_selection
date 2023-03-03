@@ -333,6 +333,11 @@ def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
 
         exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' \
                 for s in percent_high_SNR_noises]
+        
+        if "number_of_features" in kwargs.keys():
+            exp_conds = [f'{s}_num_feats_{kwargs["number_of_features"]}' for s in exp_conds]
+            exp_conds_add = [f'{s}_num_feats_{kwargs["number_of_features"]}' for s in exp_conds_add]
+            exp_conds_keep = [f'{s}_num_feats_{kwargs["number_of_features"]}' for s in exp_conds_keep]
 
 
         exp_conds.extend(exp_conds_add)
