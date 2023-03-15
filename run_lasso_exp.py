@@ -5,7 +5,7 @@ from simulation_runs import run_convex_selection
 exp_types = ['lasso', 'convex', 'joint_convex', 'joint_convex_init_feature']
 exp_types_to_run = ['joint_convex_init_feature']
 
-total_exp_time = 600# in seconds
+total_exp_time = 2400# in seconds
 N_NEURONS = 128
 
 ROUND_DECIMALS = 3
@@ -38,6 +38,7 @@ if "lasso" in exp_types_to_run:
                         FEATURE_SELETOR_TYPE='lasso',
                         RANDOM_INITIAL_FEATURES = True,
                         lasso_alpha = a, 
+                        
                         lasso_threshold = lasso_threshold,
                         adaptive_lasso = adaptive_lasso,  
                         n_neurons = N_NEURONS,   
@@ -171,7 +172,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     num_lags_array = [3]
     
     random_seeds = [0]
-    num_of_features = N_NEURONS // 2 # specify how many features we want to use, or None
+    num_of_features_array  = [16, 32, 64, 96, 128]   # specify how many features we want to use, or None
 
 
     for sparsity_val in sparsity_array:
@@ -180,32 +181,34 @@ if "joint_convex_init_feature" in exp_types_to_run:
                 for decay_factor in  decay_factor_array:
                     
                     for random_seed in random_seeds:
-
-                        # no one can escape the beauty of python one-liner, granted at the expense of line width
-                        sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
                         
-                        print("********************************************")
-                        print("********************************************")
-                        print("********************************************")
-                        print(f'running experiment convex feature selection')
-                        run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                            data_dump_folder = data_dump_folder,
-                                            norm_val= [mean_first_peak, std_of_peaks],
-                                            norm_var_2= [mean_second_peak, std_of_peaks],
-                                            train_high_SNR_time
-                                                = 10, #  60 batches or  1200 times)
-                                            FEATURE_SELETOR_TYPE='joint_convex',
-                                            threshold_selection = 0.5,
-                                            objective_offset = 1,
-                                            sparsity_coef = sparsity_val,
-                                            smoothness_coef = smoothness_val,
-                                            num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
-                                            past_batch_decay_factor = decay_factor,
-                                            number_of_features = num_of_features,
-                                            RANDOM_INITIAL_FEATURES=True,
-                                            random_seed=random_seed
-                                            
-                        )
-                        print("********************************************")
-                        print("********************************************")
-                        print("********************************************")
+                        for num_of_features in num_of_features_array:
+
+                            # no one can escape the beauty of python one-liner, granted at the expense of line width
+                            sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
+                            
+                            print("********************************************")
+                            print("********************************************")
+                            print("********************************************")
+                            print(f'running experiment convex feature selection')
+                            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                                data_dump_folder = data_dump_folder,
+                                                norm_val= [mean_first_peak, std_of_peaks],
+                                                norm_var_2= [mean_second_peak, std_of_peaks],
+                                                train_high_SNR_time
+                                                    = 10, #  60 batches or  1200 times)
+                                                FEATURE_SELETOR_TYPE='joint_convex',
+                                                threshold_selection = 0.5,
+                                                objective_offset = 1,
+                                                sparsity_coef = sparsity_val,
+                                                smoothness_coef = smoothness_val,
+                                                num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+                                                past_batch_decay_factor = decay_factor,
+                                                number_of_features = num_of_features,
+                                                RANDOM_INITIAL_FEATURES=True,
+                                                random_seed=random_seed
+                                                
+                            )
+                            print("********************************************")
+                            print("********************************************")
+                            print("********************************************")

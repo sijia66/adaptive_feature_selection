@@ -5,6 +5,9 @@ import statsmodels.api as sm
 import sklearn
 
 
+from sklearn.metrics import r2_score
+
+X_VEL_STATE, Y_VEL_STATE,CONST_STATE  = 3, 5,6
 
 def calc_average_ssm_for_each_X_column(y, X, beta,
                             return_normalized = False):
@@ -194,3 +197,122 @@ def calculate_feature_smoothness_multiple_conditions(matrix_cond_by_feature_by_b
         smooth_batch_arrays.append(calculate_feature_smoothness(matrix_cond_by_feature_by_batch[i, :, :], **kwargs))
 
     return np.array(smooth_batch_arrays)
+
+
+def calc_R2(spike_counts_batch, intended_velocities, debug = True):
+    """
+    calculates R2 by fitting spike_counts to intende_velocities.
+    it also does type checking that allows handling of input types of either list or np.ndarray
+    params:
+        spike_counts_batch (num of batch by num units by num of data points per batch)
+        intended_velocities (num of batch by num states by intended velocities)
+    returns:
+        r_values (num_batches)
+        coefs: the fitted coefs. 
+    """
+
+    if isinstance(spike_counts_batch, list) and isinstance(intended_velocities, list):
+        num_batches = len(spike_counts_batch)
+    elif isinstance(spike_counts_batch, np.ndarray) and isinstance(intended_velocities, np.ndarray):
+        num_batches = spike_counts_batch.shape[0]
+    else:
+        raise Exception(f"mixed input types of {type(spike_counts_batch)} and {type(intended_velocities)}")
+    
+
+    print(num_batches)
+
+    coefs =  list()
+    r_values = [None] * num_batches
+
+    linear_reg_model = LinearRegression()
+
+    for i in range(num_batches):
+
+        if isinstance(spike_counts_batch, np.ndarray): 
+            spike_counts_one_batch  = spike_counts_batch[i, :,:]
+            intended_velocities_one_batch = intended_velocities[i,:,:]
+        elif isinstance(spike_counts_batch, list):
+            spike_counts_one_batch = spike_counts_batch[i]
+            intended_velocities_one_batch = intended_velocities[i]
+
+
+        linear_reg_model.fit(spike_counts_one_batch.T, intended_velocities_one_batch.T)
+
+        #save the fitted coefs.
+        coefs.append(linear_reg_model.coef_.copy())
+        #print(linear_reg_model.coef_.shape)
+
+        # calculate R2 values
+        predicted_velocities = linear_reg_model.predict(spike_counts_one_batch.T)
+        score=r2_score(intended_velocities_one_batch.T, predicted_velocities)
+
+        r_values[i] = score
+
+    return np.array(r_values), coefs
+
+
+def calc_R2_with_sim_C( spike_counts_batch,intended_velocities, C_mat, active_set, 
+                       remove_first_and_last_Batch = True, 
+                       c_mat_remove_first_batch = True, 
+                       select_only_vel_states = True,
+                       select_features_with_active_set = False,
+                       debug = True):
+    
+    
+        # then we iterate through the batch sort of thing.
+    NUM_LEARNER_BATCHES = intended_velocities.shape[0]
+    
+    if debug:
+        print("intended_velocities", intended_velocities.shape)
+        print("spike_counts_batch", len(spike_counts_batch))
+        print("C_mat", C_mat.shape)
+        print("active_set", active_set.shape)
+    
+    if remove_first_and_last_Batch:
+        active_set = active_set[1:-1, :]
+    if c_mat_remove_first_batch:
+        C_mat = C_mat[1:, :, : ]
+        
+    if select_only_vel_states:
+        C_mat = C_mat[:,:,(X_VEL_STATE, Y_VEL_STATE,CONST_STATE)]
+        
+    
+    if debug:
+        print("intended_velocities", intended_velocities.shape)
+        print("spike_counts_batch", len(spike_counts_batch))
+        print("C_mat", C_mat.shape)
+        print("active_set", active_set.shape)
+        
+
+    
+    R_2_over_batch = []
+    
+    for i in range(NUM_LEARNER_BATCHES):
+        
+        batch_vel =  intended_velocities[i,:,:]
+        
+        # check if we get the data from the list or the np.ndarray
+        if type(spike_counts_batch) == list:
+            batch_spike_counts = spike_counts_batch[i]
+        else:
+            batch_spike_counts = spike_counts_batch[i,:,:]
+        
+        #  we can only compare to what's being used in the calculation
+        if select_features_with_active_set:
+            if debug: print(batch_spike_counts.shape)
+            batch_spike_counts = batch_spike_counts[active_set[i,:],:].T
+        else:
+            batch_spike_counts = batch_spike_counts[: ,:].T
+        
+        batch_c_mat = C_mat[i,:,:]
+        
+        selected_c_mat = batch_c_mat[active_set[i,:],:]
+        
+
+        estimated_spike_counts = selected_c_mat @ batch_vel
+        
+        score = r2_score(batch_spike_counts, estimated_spike_counts.T)
+        
+        R_2_over_batch.append(score)
+        
+    return R_2_over_batch
