@@ -996,7 +996,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     feature_x_meth_arg = [
         ('transpose', None ),
-    ]
+    ]  
 
     ######################################################################################################################
     # feature selector set up
@@ -1004,8 +1004,14 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     from feature_selection_feature import EncoderChanger
     feats.append(EncoderChanger)
     feats_2.append(EncoderChanger)
-
-
+    
+    kwargs_feature["change_sim_c_at_cycle"] = kwargs["change_sim_c_at_cycle"] if 'change_sim_c_at_cycle' in kwargs else -1
+    new_sim = make_new_sim(kwargs["encoder_change_mode"] if 'encoder_change_mode' in kwargs else 'same', 
+                           n_neurons, 
+                           bimodal_weight,
+                           sim_C, norm_val, norm_var_2, random_seed)
+    kwargs_feature["new_sim_c"] = new_sim
+    
     print('kwargs will be updated in a later time')
     print(f'the feature adaptation project is tracking {kwargs_feature.keys()} ')
 

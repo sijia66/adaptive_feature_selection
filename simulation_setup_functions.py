@@ -360,3 +360,36 @@ def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
         raise ValueError('Unsupported feature selector type')
     
     return exp_conds
+
+def make_new_sim(encoder_change_mode, n_neurons,
+                 original_bimodal_weights, 
+                 old_sim_c,
+                 norm_var,  norm_var_2,
+                 random_seed):
+    """
+    assume that the original bimodal weights have two values
+    the first value is the fraction of the good neurons, alright
+    
+    assume the sim_c is sorted by the good neurons first.
+    """
+    
+    if encoder_change_mode == 'same':
+        new_sim = old_sim_c
+    elif encoder_change_mode == 'drop_half_good_neurons':
+        number_good_neurons = int(n_neurons * original_bimodal_weights[0])
+        number_of_good_neurons_to_drop = int(number_good_neurons / 2)
+        
+        sub_sim_c = _get_rand_encoder_matrix(number_of_good_neurons_to_drop, 
+                                        7, 
+                                        norm_var_2[1])
+        
+        # make bottom half of the neurons bad
+        new_sim = old_sim_c.copy()
+        indices = np.arange(number_of_good_neurons_to_drop, number_good_neurons)
+        new_sim[indices, :] = sub_sim_c
+    else:
+        raise ValueError('Unsupported encoder change mode')
+
+    return new_sim
+        
+        

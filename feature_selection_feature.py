@@ -92,6 +92,10 @@ class TransformerBatchToFit(FeatureTransformer):
 
 
 class EncoderChanger():
+    
+    """
+        this encoder changer assumes that the experiment classes uses a simulation encoder. 
+    """
 
     debug = True
 
@@ -99,23 +103,41 @@ class EncoderChanger():
 
         # set up encoder weights saving
         self._encoder_C_list_cycle_by_feature_by_states = []
+        
+        # get when to change the sim in cycless
+        self._change_sim_cycle = kwargs['change_sim_c_at_cycle'] if "change_sim_c_at_cycle" in kwargs else -1
+        self._new_sim_c = kwargs['new_sim_c'] if "new_sim_c" in kwargs else None
 
-        # initial encoder set up
+        # initial encoder changer count
+        self._encoder_change_count = 0
 
         super().__init__(*args, **kwargs)
+        
+    def change_encoder(self):
+        '''
+        changes the encoder to the new one
+        '''
 
-    # def record_encoder_params(self, encoder):
+        # check if at the cycle_count
+        if self._encoder_change_count == self._change_sim_cycle:
+            # change the encoder
+            self._init_neural_encoder()
+            if self.debug: print('changed encoder at cycle', self._encoder_change_count)
+        
+        self._encoder_change_count += 1
 
-    #     #self._encoder_C_list_cycle_by_feature_by_states.append(encoder.C.copy())
+    def record_encoder_params(self, encoder):
 
-    #     if self.debug:
-    #         print("have stored this number of cycles encoder c matrix", len(self._encoder_C_list_cycle_by_feature_by_states))
+        self._encoder_C_list_cycle_by_feature_by_states.append(encoder.C.copy())
+
+        if self.debug:
+            print("have stored this number of cycles encoder c matrix", len(self._encoder_C_list_cycle_by_feature_by_states))
 
     # def save_feature_params(self):
 
 
     #     #prepare data dict
-
+      
     #     data_dict = {
     #         'C_mat_cycle_by_num_by_states': self._encoder_C_list_cycle_by_feature_by_states,
     #     }
@@ -1236,7 +1258,10 @@ def run_exp_loop(exp,  **kwargs):
 
         ###run the bmi loop #####
         # _cycle
-
+        
+        if isinstance(exp, EncoderChanger):
+            exp.change_encoder()
+            
         # bmi feature extraction, eh
         #riglib.bmi: 1202
         feature_data = exp.get_features()
