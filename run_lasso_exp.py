@@ -235,7 +235,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # smoothness_array = np.arange(0, 0.15, 0.025)
     sparsity_array = [0.125]
 
-    smoothness_array = [0.0]
+    smoothness_array = [0.05]
     num_lags_array = [3]
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
@@ -245,8 +245,8 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     change_sim_c_at_cycle = 18000 # 
     #encoder_change_mode = "drop_half_good_neurons"
     # encoder_change_mode = "swap_tuning"
-    # encoder_change_mode = "shuffle_rows"
-    encoder_change_mode= "change_to_zeros"
+    encoder_change_mode = "shuffle_rows"
+    # encoder_change_mode= "change_to_zeros"
     
     number_of_features = 32
 

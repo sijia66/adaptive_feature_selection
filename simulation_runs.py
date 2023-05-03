@@ -455,12 +455,7 @@ def run_iter_feat_selection(
     ##################################################################################
     # set up file names for comparision
     exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
-    exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
-    exp_conds_keep = [f'same_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
-    
 
-    exp_conds.extend(exp_conds_add)
-    exp_conds.extend(exp_conds_keep)
 
     NUM_NOISES = len(percent_high_SNR_noises)
 
@@ -863,7 +858,6 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     base_class = SimpleTargetCaptureWithHold
 
     #for adding experimental features such as encoder, decoder
-    feats = []
     feats_2 = []
     feats_set = [] # this is a going to be a list of lists 
 
@@ -871,9 +865,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     from simulation_features import TimeCountDown
     from features.sync_features import HDFSync
-    feats.append(HDFSync)
     feats_2.append(HDFSync)
-    feats.append(TimeCountDown)
     feats_2.append(TimeCountDown)
 
 
@@ -900,8 +892,6 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     from features.simulation_features import SimCosineTunedEncWithNoise
     #set up intention feedbackcontroller
     #this ideally set before the encoder
-    feats.append(SimIntentionLQRController)
-    feats.append(SimCosineTunedEncWithNoise)
     feats_2.append(SimIntentionLQRController)
     feats_2.append(SimCosineTunedEncWithNoise)
 
@@ -912,13 +902,11 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     #take care the decoder setup
     if DECODER_MODE == 'random':
-        feats.append(SimKFDecoderRandom)
         feats_2.append(SimKFDecoderRandom)
         print(f'{__name__}: set base class ')
         print(f'{__name__}: selected SimKFDecoderRandom \n')
     else: #defaul to a cosEnc and a pre-traind KF DEC
         from features.simulation_features import SimKFDecoderSup
-        feats.append(SimKFDecoderSup)
         feats_2.append(SimKFDecoderSup)
         print(f'{__name__}: set decoder to SimKFDecoderSup\n')
 
@@ -940,17 +928,14 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     #now, we can set up a dumb/or not-dumb learner
     if LEARNER_TYPE == 'feedback':
         from features.simulation_features import SimFeedbackLearner
-        feats.append(SimFeedbackLearner)
         feats_2.append(SimFeedbackLearner)
     else:
         from features.simulation_features import SimDumbLearner
-        feats.append(SimDumbLearner)
         feats_2.append(SimDumbLearner)
 
     #to update the decoder.
     if UPDATER_TYPE == 'smooth_batch':
         from features.simulation_features import SimSmoothBatch
-        feats.append(SimSmoothBatch)
         feats_2.append(SimSmoothBatch)
     else: #defaut to none 
         print(f'{__name__}: need to specify an updater')
@@ -960,8 +945,6 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector, LassoFeatureSelector
 
 
-    #pass the real time limit on clock
-    feats.append(FeatureSelector)
 
     kwargs_feature = dict()
     kwargs_feature = {
@@ -1002,7 +985,6 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     # feature selector set up
 
     from feature_selection_feature import EncoderChanger
-    feats.append(EncoderChanger)
     feats_2.append(EncoderChanger)
     
     kwargs_feature["change_sim_c_at_cycle"] = kwargs["change_sim_c_at_cycle"] if 'change_sim_c_at_cycle' in kwargs else -1
@@ -1024,30 +1006,17 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     ########################################################################################################################
     # combine experimental features
-    exp_feats = [feats] * NUM_NOISES
-
-    e_f_2 = [feats_2] * NUM_NOISES
-
-    e_f_3 = [feats] * NUM_NOISES
-
-    exp_feats.extend(e_f_2)
-    exp_feats.extend(e_f_3)
+    exp_feats = [feats_2] * NUM_NOISES
 
     if DEBUG_FEATURE: 
         from features.simulation_features import DebugFeature
-        feats.append(DebugFeature)
         
     if SAVE_HDF: 
-        feats.append(SaveHDF)
         feats_2.append(SaveHDF)
     if SAVE_SIM_HDF: 
-        feats.append(SimHDF)
         feats_2.append(SimHDF)
         
         
-    #pass the real time limit on clock
-    feats.append(SimClockTick)
-    feats.append(SimTime)
 
     feats_2.append(SimClockTick)
     feats_2.append(SimTime)
@@ -1085,10 +1054,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         
         kwargs_exps.append(d)
 
-    kwargs_exps_add = copy.deepcopy(kwargs_exps)
-    kwargs_exps_start = copy.deepcopy(kwargs_exps)
-
-    for k in kwargs_exps_add:
+    for k in kwargs_exps:
         
         if RANDOM_INITIAL_FEATURES:
             np.random.seed(random_seed)
@@ -1096,19 +1062,13 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         else:
             k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
 
-    for k in kwargs_exps_start:
-        if RANDOM_INITIAL_FEATURES:
-            np.random.seed(random_seed)
-            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
-        else:
-            k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-            k['init_feat_set'][no_noise_neuron_list] = True
-            
-            
-
-    kwargs_exps.extend(kwargs_exps_add)
-    kwargs_exps.extend(kwargs_exps_start)
-
+    # for k in kwargs_exps_start:
+    #     if RANDOM_INITIAL_FEATURES:
+    #         np.random.seed(random_seed)
+    #         k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+    #     else:
+    #         k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
+    #         k['init_feat_set'][no_noise_neuron_list] = True
     print(f'we have got {len(kwargs_exps)} exps')
 
     #########################################################################################################################
