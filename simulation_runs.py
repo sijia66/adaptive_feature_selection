@@ -1012,6 +1012,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
                            sim_C, norm_val, norm_var_2, random_seed)
     kwargs_feature["new_sim_c"] = new_sim
     
+    print(f'{__name__}: set up encoder change with {kwargs["encoder_change_mode"]}')
+    
     print('kwargs will be updated in a later time')
     print(f'the feature adaptation project is tracking {kwargs_feature.keys()} ')
 

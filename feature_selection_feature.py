@@ -122,6 +122,7 @@ class EncoderChanger():
         if self._encoder_change_count == self._change_sim_cycle:
             # change the encoder
             self._init_neural_encoder()
+            self.extractor.encoder = self.encoder
             if self.debug: print('changed encoder at cycle', self._encoder_change_count)
         
         self._encoder_change_count += 1

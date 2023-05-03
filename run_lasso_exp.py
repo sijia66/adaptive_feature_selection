@@ -155,7 +155,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     '/home/sijia66/data/part2_random_start_bottleneck_num_features/'
     
     # we set up the neural populations
-    mean_first_peak = 50
+    mean_first_peak = 10
     mean_second_peak = 100
     std_of_peaks = 3
   
@@ -227,24 +227,28 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     '/home/sijia66/data/encoder_dev/'
     
     # we set up the neural populations
-    mean_first_peak = 50
+    mean_first_peak = 10
     mean_second_peak = 100
     std_of_peaks = 3
 
     #sparsity_array = np.arange(0.05, 0.15, 0.01)
     # smoothness_array = np.arange(0, 0.15, 0.025)
-    sparsity_array = [0.11]
+    sparsity_array = [0.125]
 
-    smoothness_array = [0.125]
+    smoothness_array = [0.0]
     num_lags_array = [3]
-    decay_factor_array  = [0.5]
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
-    decay_factor_array = [0.8]
+    decay_factor_array = [0.5]
     
     
-    change_sim_c_at_cycle = 3600 # 
-    encoder_change_mode = "drop_half_good_neurons"
+    change_sim_c_at_cycle = 18000 # 
+    #encoder_change_mode = "drop_half_good_neurons"
+    # encoder_change_mode = "swap_tuning"
+    # encoder_change_mode = "shuffle_rows"
+    encoder_change_mode= "change_to_zeros"
+    
+    number_of_features = 32
 
 
     for sparsity_val in sparsity_array:
@@ -266,13 +270,14 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                                         train_high_SNR_time
                                          = 10, #  60 batches or  1200 times)
                                         FEATURE_SELETOR_TYPE='joint_convex',
-                                        number_of_features = None,
+                                        number_of_features = number_of_features,
                                         threshold_selection = 0.5,
                                         objective_offset = 1,
                                         sparsity_coef = sparsity_val,
                                         smoothness_coef = smoothness_val,
                                         num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
                                         past_batch_decay_factor = decay_factor,
+                                        RANDOM_INITIAL_FEATURES=False,
                                         encoder_change_mode = encoder_change_mode,
                                         change_sim_c_at_cycle = change_sim_c_at_cycle,
                     )

@@ -3,7 +3,8 @@
 import numpy as np
 import scipy.stats as ss
 
-
+X_VEL_IND = 3
+Y_VEL_IND = 5
 def get_enc_setup(sim_mode = 'two_gaussian_peaks', tuning_level = 1, n_neurons = 4, 
                   bimodal_weight = [0.5, 0.5],
                   norm_var = [50,  10], # sufficient statistics for the first gaussian peak,
@@ -381,15 +382,61 @@ def make_new_sim(encoder_change_mode, n_neurons,
         
         sub_sim_c = _get_rand_encoder_matrix(number_of_good_neurons_to_drop, 
                                         7, 
-                                        norm_var_2[1])
+                                        norm_var[0])
         
         # make bottom half of the neurons bad
         new_sim = old_sim_c.copy()
         indices = np.arange(number_of_good_neurons_to_drop, number_good_neurons)
         new_sim[indices, :] = sub_sim_c
+    elif encoder_change_mode == 'swap_tuning':
+        new_sim = swap_array_rows(old_sim_c)
+    elif encoder_change_mode == "upper_half_rotations":
+        new_sim = rotate_good_neurons(old_sim_c, n_neurons, original_bimodal_weights)
+    elif encoder_change_mode == "shuffle_rows":
+        new_sim = old_sim_c.copy()
+        np.random.shuffle(new_sim)
+    elif encoder_change_mode == "change_to_zeros":
+        new_sim = np.zeros_like(old_sim_c)
+
     else:
         raise ValueError('Unsupported encoder change mode')
 
     return new_sim
         
-        
+
+def swap_array_rows(arr):
+    # get the number of rows in the array
+    num_rows = arr.shape[0]
+
+    # get the index of the middle row
+    mid_row_index = num_rows // 2
+
+    # slice the array to get the upper half of the rows
+    upper_half = arr[:mid_row_index, :]
+
+    # slice the array to get the bottom half of the rows
+    bottom_half = arr[mid_row_index:, :]
+
+    # concatenate the bottom half of the rows with the upper half of the rows
+    new_arr = np.concatenate((bottom_half, upper_half))
+
+    return new_arr
+
+import numpy as np
+
+def rotate_vectors_90(vectors, x,y):
+
+    # Rotate by 90 degrees
+    rotated = np.stack((-vectors[:,1], vectors[:,0]), axis=1)
+
+    return rotated, angles
+
+def rotate_good_neurons(old_sim_c, n_neurons, original_bimodal_weights):
+    new_sim = old_sim_c.copy()
+    number_good_neurons = int(n_neurons * original_bimodal_weights[0])
+    
+    new_sim[:number_good_neurons, X_VEL_IND] = -old_sim_c[:number_good_neurons, Y_VEL_IND]
+    new_sim[:number_good_neurons:, Y_VEL_IND] = old_sim_c[:number_good_neurons, X_VEL_IND]
+    
+    return new_sim
+    
