@@ -120,6 +120,7 @@ class EncoderChanger():
 
         # check if at the cycle_count
         if self._encoder_change_count == self._change_sim_cycle:
+            self.sim_C = self._new_sim_c
             # change the encoder
             self._init_neural_encoder()
             self.extractor.encoder = self.encoder
