@@ -42,8 +42,9 @@ def load_feature_selection_files(data_dump_folder, exp_conds):
             exp_data_all.append(d)
             exp_data_metadata_all.append(m)
             
-        except:
+        except Exception as error:
             print(f'cannot parse {e}')
+            print(error)
 
         
     return (exp_data_all, exp_data_metadata_all)

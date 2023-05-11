@@ -345,7 +345,7 @@ def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
         # exp_conds.extend(exp_conds_keep)
         
     elif FEATURE_SELECTOR_TYPE == "lasso":
-        exp_conds = [f'wo_FS_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}_lasso_threshold_{kwargs["lasso_threshold"]}' for s in percent_high_SNR_noises]
+        exp_conds = [f'lasso_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}_lasso_threshold_{kwargs["lasso_threshold"]}' for s in percent_high_SNR_noises]
 
         # exp_conds_add = [f'iter_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}_lasso_threshold_{kwargs["lasso_threshold"]}' \
         #         for s in percent_high_SNR_noises]
@@ -357,8 +357,8 @@ def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
 
         # exp_conds.extend(exp_conds_add)
         # exp_conds.extend(exp_conds_keep)
-    elif FEATURE_SELECTOR_TYPE == "feature_selector":
-        pass
+    elif FEATURE_SELECTOR_TYPE == "full":
+        exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
     else:
         raise ValueError('Unsupported feature selector type')
     
