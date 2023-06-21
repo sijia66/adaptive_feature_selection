@@ -4,6 +4,8 @@
 *.pyc
 *.h5
 *.log
+*.pdf
+*.png
 wo_feature selection
 
 !afs_clda_more_neurons_different_neurons_sfn.ipynb
