@@ -5,7 +5,44 @@ the inputs to this functins are primarily np.arrays
 import numpy as np
 from riglib.bmi.kfdecoder import KalmanFilter
 import statsmodels.api as sm
+import sklearn
 
+# we calculate the smoothness metric 
+# copy and paste for now,  we can potentially do this online.
+
+def calculate_feature_smoothness(matrix_feature_by_batch:np.ndarray, mode:str = "compare_to_first_batch") ->  np.ndarray:
+    """
+    use jaccard similarity score to compare later feature selection batches to the very first one batch
+    mode: str: incremental between batches
+    """
+    # for now, only support two dim array, the array dim is defined as  feature by batch 
+    assert matrix_feature_by_batch.ndim == 2
+    
+    if mode == "incremental":
+        smoothness_score = np.zeros(matrix_feature_by_batch.shape[1] - 1)
+        for i in range(matrix_feature_by_batch.shape[1] - 1):
+            smoothness_score[i] = sklearn.metrics.jaccard_score(matrix_feature_by_batch[:,i], 
+                                                                matrix_feature_by_batch[:,i+1])
+    else: # otherwise, we compare to the very first one
+        initial_batch = matrix_feature_by_batch[:, 0]
+        smoothness_score = np.zeros(matrix_feature_by_batch.shape[1])
+        for i in range(matrix_feature_by_batch.shape[1]):
+
+            smoothness_score[i] = sklearn.metrics.jaccard_score(matrix_feature_by_batch[:,i], initial_batch)
+
+    return smoothness_score
+    
+    
+def calculate_feature_smoothness_multiple_conditions(matrix_cond_by_feature_by_batch:np.ndarray, **kwargs) -> np.ndarray:
+
+    num_conds, _, _  = matrix_cond_by_feature_by_batch.shape
+
+    smooth_batch_arrays = []
+
+    for i in range(num_conds):
+        smooth_batch_arrays.append(calculate_feature_smoothness(matrix_cond_by_feature_by_batch[i, :, :], **kwargs))
+
+    return np.array(smooth_batch_arrays)
 
 
 def change_target_kalman_filter_with_a_C_mat(target_kf, C:np.matrix, Q:np.matrix = np.nan, debug:bool = True):
