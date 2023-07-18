@@ -562,7 +562,6 @@ class ConvexFeatureSelector(FeatureSelector):
 
         C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
 
-
         self.determine_change_features(C_mat, Q_diag)
 
     def determine_change_features(self, obs_c_mat, noise_q_mat):
@@ -656,13 +655,13 @@ class JointConvexFeatureSelector(FeatureSelector):
         
         # the stuff for the achieving some fraction of the feature selection method
         self._objective_offset = kwargs.pop('objective_offset', 1)
+        
+        self._smooth_the_matrices = kwargs.pop('smooth_the_matrices', True)
 
 
         self._setup_sparse_smooth_params(**kwargs)
         self._setup_smooth_batch_params(**kwargs)
         self._initialize_deque()
-
-        
 
         # after we do optimization, we need these params to get our selection going sort of thing.
         self._selection_threshold = kwargs.pop("threshold_selection", 0.5)
@@ -683,8 +682,10 @@ class JointConvexFeatureSelector(FeatureSelector):
 
         C_mat, Q_diag = self.measure_neurons_wz_intendedkin_and_spike(target_matrix, feature_matrix)
 
-        smoothed_c_mat, smoothed_q_mat = self._apply_smooth_batch(C_mat, Q_diag)
-
+        if self._smooth_the_matrices:   
+            smoothed_c_mat, smoothed_q_mat = self._apply_smooth_batch(C_mat, Q_diag)
+        else:
+            smoothed_c_mat, smoothed_q_mat = C_mat, Q_diag
 
         self.determine_change_features(smoothed_c_mat, smoothed_q_mat)
     
