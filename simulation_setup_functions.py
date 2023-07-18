@@ -402,8 +402,10 @@ def make_new_sim(encoder_change_mode, n_neurons,
         new_sim = old_sim_c.copy()
         np.random.shuffle(new_sim)
     elif encoder_change_mode == "change_to_zeros":
-        new_sim = np.zeros_like(old_sim_c)
-
+        new_sim = old_sim_c.copy()
+        # random set three quarters of the neurons to zero
+        new_sim[:int(n_neurons * 0.75), : ] = 0
+        # new_sim = np.zeros_like(old_sim_c)
     else:
         raise ValueError('Unsupported encoder change mode')
 
@@ -427,8 +429,6 @@ def swap_array_rows(arr):
     new_arr = np.concatenate((bottom_half, upper_half))
 
     return new_arr
-
-import numpy as np
 
 def rotate_vectors_90(vectors, x,y):
 

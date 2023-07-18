@@ -107,6 +107,7 @@ class EncoderChanger():
         # get when to change the sim in cycless
         self._change_sim_cycle = kwargs['change_sim_c_at_cycle'] if "change_sim_c_at_cycle" in kwargs else -1
         self._new_sim_c = kwargs['new_sim_c'] if "new_sim_c" in kwargs else None
+        self._encoder_change_mode = kwargs['encoder_change_mode'] if "encoder_change_mode" in kwargs else 'same'
 
         # initial encoder changer count
         self._encoder_change_count = 0
@@ -134,22 +135,6 @@ class EncoderChanger():
 
         if self.debug:
             print("have stored this number of cycles encoder c matrix", len(self._encoder_C_list_cycle_by_feature_by_states))
-
-    # def save_feature_params(self):
-
-
-    #     #prepare data dict
-      
-    #     data_dict = {
-    #         'C_mat_cycle_by_num_by_states': self._encoder_C_list_cycle_by_feature_by_states,
-    #     }
-
-    #     #save to data dict
-    #     #mk temporary directory 
-    #     import tempfile
-    #     print(f'saving feature selection file name to {self.h5file.name}')
-    #     aopy.data.save_hdf(tempfile.gettempdir(), self.h5file.name, data_dict, data_group="/feature_selection", append = True, debug=True)
-
 
 class FeatureSelector():
     

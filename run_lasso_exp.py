@@ -236,8 +236,8 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     change_sim_c_at_cycle = 18000 # 
     #encoder_change_mode = "drop_half_good_neurons"
     # encoder_change_mode = "swap_tuning"
-    encoder_change_mode = "shuffle_rows"
-    # encoder_change_mode= "change_to_zeros"
+    # encoder_change_mode = "shuffle_rows"
+    encoder_change_mode= "change_to_zeros"
     
     
     
@@ -312,7 +312,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                     print("********************************************")
     
     # lasso feature selection
-    lasso_alphas = [0.01, 0.1, 1, 10]
+    #lasso_alphas = [0.01, 0.1, 1, 10]
     lasso_alphas = [10]
     lasso_thresholds = [2.5]
     
