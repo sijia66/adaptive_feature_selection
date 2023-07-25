@@ -1329,7 +1329,7 @@ def run_exp_loop(exp,  **kwargs):
                 # Determine whether the current state or previous state should be given to the learner
                 if exp.bmi_system.learner.input_state_index == 0:
                     learner_state = exp.bmi_system.decoder.get_state()
-                elif exp.bmi_system.learner.input_state_index == -1:
+                elif exp.bmi_system.learner.input_state_index == -1:  
                     learner_state = prev_state
                 else:
                     print(("Not implemented yet: %d" %
