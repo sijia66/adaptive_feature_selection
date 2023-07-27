@@ -937,8 +937,11 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     if UPDATER_TYPE == 'smooth_batch':
         from features.simulation_features import SimSmoothBatch
         feats_2.append(SimSmoothBatch)
+    elif UPDATER_TYPE == 'smooth_batch_with_full_feature':
+        from features.simulation_features import SimSmoothBatchFullFeature
+        feats_2.append(SimSmoothBatchFullFeature)
     else: #defaut to none 
-        print(f'{__name__}: need to specify an updater')
+        raise Exception(f'{__name__}: need to specify an updater')
 
     ############################################################################################################################
     # ## feature selector setup
@@ -968,7 +971,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         kwargs_feature["num_of_lags"] = kwargs["num_of_lags"]
         kwargs_feature["past_batch_decay_factor"] = kwargs["past_batch_decay_factor"]
         kwargs_feature["threshold_selection"] = kwargs["threshold_selection"]
-        kwargs_feature["number_of_features"] = kwargs["number_of_features"]
+        kwargs_feature["number_of_features"] = n_neurons
     elif FEATURE_SELETOR_TYPE == "lasso":
         feats_2.append(LassoFeatureSelector)
         kwargs_feature['lasso_alpha'] = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs else 1.0

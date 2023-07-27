@@ -272,8 +272,9 @@ class FeatureSelector():
 
         #update the used C matrix  with the current values 
         if True:
-            print("select_decoder_features:,", self.used_C_mat[self._prev_feat_set, : ].shape )  
-            print(f"select_decoder_features: {target_decoder.filt.C.shape}")
+            # print("select_decoder_features:,", self.used_C_mat[self._prev_feat_set, : ].shape )  
+            # print(f"select_decoder_features: {target_decoder.filt.C.shape}")
+            pass
         
         # this is only for the first time
         if self.used_C_mat[self._prev_feat_set, : ].shape != target_decoder.filt.C.shape:
@@ -1353,17 +1354,19 @@ def run_exp_loop(exp,  **kwargs):
                 unselected_batch = np.copy(batch_data['spike_counts'])
                 selected_batch = np.copy(unselected_batch[exp._active_feat_set,:])
                 batch_data['spike_counts'] = selected_batch.copy()
-                
-                kwargs.update(batch_data)
-                exp.bmi_system.updater(**kwargs)
-                exp.bmi_system.learner.disable()
+                batch_data['unselected_spike_counts'] = unselected_batch.copy() # specifically for feature selection
                 
                 #measure features. 
                 if isinstance(exp, FeatureSelector):
                     exp.measure_features(unselected_batch,
                                        batch_data['intended_kin'])
+                    
+                    batch_data['active_feat_set'] = exp._active_feat_set.copy()
                 
-
+                kwargs.update(batch_data)
+                exp.bmi_system.updater(**kwargs)
+                exp.bmi_system.learner.disable()
+                
             new_params = None  # by default, no new parameters are available
             if exp.bmi_system.has_updater:
                 new_params = copy.deepcopy(exp.bmi_system.updater.get_result())
