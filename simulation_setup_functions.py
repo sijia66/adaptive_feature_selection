@@ -321,7 +321,7 @@ def config_feature_selector(FEATURE_SELECTOR_TYPE, feats, feats_2, **kwargs):
     return (feats, feats_2, feature_x_meth_arg, kwargs_feature)
 
 
-def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
+def config_exp_conds(UPDATER_TYPE, FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
                      fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
                      **kwargs):
     
@@ -348,7 +348,10 @@ def config_exp_conds(FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
     if "encoder_change_mode" in kwargs:
         for i, exp_cond in enumerate(exp_conds):
             exp_conds[i] = exp_cond + f'_{kwargs["encoder_change_mode"]}'
-    
+            
+    if  UPDATER_TYPE != 'smooth_batch':
+        for i, exp_cond in enumerate(exp_conds):
+            exp_conds[i] = exp_cond + f'_{UPDATER_TYPE}'
     return exp_conds
 
 def make_new_sim(encoder_change_mode, n_neurons,

@@ -827,7 +827,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     ##################################################################################
     # set up file names for comparision
     
-    exp_conds = config_exp_conds(FEATURE_SELETOR_TYPE, random_seed, rho, batch_len,
+    exp_conds = config_exp_conds(UPDATER_TYPE, FEATURE_SELETOR_TYPE, random_seed, rho, batch_len,
                      fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
                      **kwargs)
 
@@ -971,7 +971,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         kwargs_feature["num_of_lags"] = kwargs["num_of_lags"]
         kwargs_feature["past_batch_decay_factor"] = kwargs["past_batch_decay_factor"]
         kwargs_feature["threshold_selection"] = kwargs["threshold_selection"]
-        kwargs_feature["number_of_features"] = n_neurons
+        kwargs_feature["number_of_features"] = kwargs["number_of_features"]
     elif FEATURE_SELETOR_TYPE == "lasso":
         feats_2.append(LassoFeatureSelector)
         kwargs_feature['lasso_alpha'] = kwargs['lasso_alpha'] if 'lasso_alpha' in kwargs else 1.0

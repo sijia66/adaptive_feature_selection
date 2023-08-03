@@ -278,6 +278,7 @@ class FeatureSelector():
         
         # this is only for the first time
         if self.used_C_mat[self._prev_feat_set, : ].shape != target_decoder.filt.C.shape:
+            print('select_decoder_features: first time', self.used_C_mat.shape, target_decoder.filt.C.shape)
             self.used_C_mat[self._prev_feat_set, : ] = np.copy(target_decoder.filt.C[self._prev_feat_set, :])
         else: 
             self.used_C_mat[self._prev_feat_set, : ] = np.copy(target_decoder.filt.C)
@@ -557,7 +558,7 @@ class ConvexFeatureSelector(FeatureSelector):
     def measure_features(self, feature_matrix, target_matrix):
         '''
         feature_matrix[np.array]: n_time_points by n_features
-        target_matrix[np.array]: n_time_points by n_target fitting vars
+        target_matrix[np.array]: n_time_poinumber_of_featuresnts by n_target fitting vars
         '''
         self.feature_measure_count += 1
 
@@ -1370,6 +1371,11 @@ def run_exp_loop(exp,  **kwargs):
             new_params = None  # by default, no new parameters are available
             if exp.bmi_system.has_updater:
                 new_params = copy.deepcopy(exp.bmi_system.updater.get_result())
+                
+                if (new_params is not None) and ("selected_decoder_features_flag" in new_params):
+                    if new_params['selected_decoder_features_flag']:
+                        exp.decoder_change_flag = False # no need to change decoder anymore
+                    
 
             # Update the decoder if new parameters are available
             if not (new_params is None):

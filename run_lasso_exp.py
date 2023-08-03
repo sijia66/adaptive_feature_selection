@@ -268,7 +268,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     
 
     feature_selector_type = 'joint_convex'
-
+    number_of_features = 32
 
     #sparsity_array = np.arange(0.05, 0.15, 0.01)
     # smoothness_array = np.arange(0, 0.15, 0.025)
@@ -279,9 +279,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
     decay_factor_array = [0.5]
-
-
-
+    
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
             for num_lag in num_lags_array:
@@ -299,7 +297,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                                         train_high_SNR_time
                                          = 10, #  60 batches or  1200 times)
                                         FEATURE_SELETOR_TYPE='joint_convex',
-                                        number_of_features = N_NEURONS,
+                                        number_of_features = number_of_features,
                                         threshold_selection = 0.5,
                                         objective_offset = 1,
                                         sparsity_coef = sparsity_val,
@@ -343,6 +341,7 @@ if "full_feature_tracking" in exp_types_to_run:
     data_dump_folder = \
     '/home/sijia66/data/full_feature/'
     
+    # updater_type = "smooth_batch"
     updater_type = "smooth_batch_with_full_feature"
     
     random_seed = 2
@@ -365,8 +364,7 @@ if "full_feature_tracking" in exp_types_to_run:
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
     decay_factor_array = [0.5]
     
-    number_of_features = 32
-    
+    number_of_features = 33
     encoder_change_mode = "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
 
@@ -403,41 +401,6 @@ if "full_feature_tracking" in exp_types_to_run:
                     )
                     print("********************************************")
                     
-    
-    # we don't smooth the matrices
-    for sparsity_val in sparsity_array:
-        for smoothness_val in smoothness_array:
-            for num_lag in num_lags_array:
-                for decay_factor in  decay_factor_array:
-
-                    # no one can escape the beauty of python one-liner, granted at the expense of line width
-                    sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
-                    
-                    print("********************************************")
-                    print(f'running experiment convex feature selection')
-                    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                        data_dump_folder = data_dump_folder,
-                                        norm_val= [mean_first_peak, std_of_peaks],
-                                        norm_var_2= [mean_second_peak, std_of_peaks],
-                                        train_high_SNR_time
-                                         = 10, #  60 batches or  1200 times)
-                                        FEATURE_SELETOR_TYPE='joint_convex',
-                                        UPDATER_TYPE=updater_type,
-                                        number_of_features = number_of_features,
-                                        threshold_selection = 0.5,
-                                        objective_offset = 1,  
-                                        sparsity_coef = sparsity_val,
-                                        smoothness_coef = smoothness_val,
-                                        num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
-                                        past_batch_decay_factor = decay_factor,
-                                        RANDOM_INITIAL_FEATURES=False,
-                                        encoder_change_mode = encoder_change_mode,
-                                        change_sim_c_at_cycle = change_sim_c_at_cycle,
-                                        random_seed=random_seed,
-                                        smooth_the_matrices = False,
-                    )
-                    print("********************************************")
-
 
 
 if "compare_convex_smooth" in exp_types_to_run:
@@ -489,7 +452,7 @@ if "compare_convex_smooth" in exp_types_to_run:
                                          = 10, #  60 batches or  1200 times)
                                         FEATURE_SELETOR_TYPE='joint_convex',
                                         number_of_features = number_of_features,
-                                        threshold_selection = 0.5,
+                                        threshold_selection = 0.5,   
                                         objective_offset = 1,  
                                         sparsity_coef = sparsity_val,
                                         smoothness_coef = smoothness_val,
