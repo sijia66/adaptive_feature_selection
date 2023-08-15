@@ -1372,6 +1372,7 @@ def run_exp_loop(exp,  **kwargs):
             if exp.bmi_system.has_updater:
                 new_params = copy.deepcopy(exp.bmi_system.updater.get_result())
                 
+                # we use the full matrix tracking updater
                 if (new_params is not None) and ("selected_decoder_features_flag" in new_params):
                     if new_params['selected_decoder_features_flag']:
                         exp.decoder_change_flag = False # no need to change decoder anymore
@@ -1383,12 +1384,13 @@ def run_exp_loop(exp,  **kwargs):
                     new_params, **exp.bmi_system.updater.update_kwargs)
                 new_params['intended_kin'] = batch_data['intended_kin']
                 new_params['spike_counts_batch'] = batch_data['spike_counts']
+                new_params['unselected_spike_counts_batch'] = batch_data['unselected_spike_counts']
+                new_params['active_feat_set'] = batch_data['active_feat_set']
+                # Save new parameters to parameter history
+                exp.bmi_system.param_hist.append(new_params)
 
                 exp.bmi_system.learner.enable()
                 update_flag = True
-
-                # Save new parameters to parameter history
-                exp.bmi_system.param_hist.append(new_params)
                 
                 #take care of the decoder selection stuff
                 if exp.is_decoder_change():

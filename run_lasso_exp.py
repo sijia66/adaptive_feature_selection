@@ -368,38 +368,115 @@ if "full_feature_tracking" in exp_types_to_run:
     encoder_change_mode = "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
 
-    # we don't smooth the matrices
-    for sparsity_val in sparsity_array:
-        for smoothness_val in smoothness_array:
-            for num_lag in num_lags_array:
-                for decay_factor in  decay_factor_array:
 
-                    # no one can escape the beauty of python one-liner, granted at the expense of line width
-                    sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
+    
+    # # we don't smooth the matrices
+    # for sparsity_val in sparsity_array:
+    #     for smoothness_val in smoothness_array:
+    #         for num_lag in num_lags_array:
+    #             for decay_factor in  decay_factor_array:
+
+    #                 # no one can escape the beauty of python one-liner, granted at the expense of line width
+    #                 sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
                     
-                    print("********************************************")
-                    print(f'running experiment convex feature selection')
-                    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                        data_dump_folder = data_dump_folder,
-                                        norm_val= [mean_first_peak, std_of_peaks],
-                                        norm_var_2= [mean_second_peak, std_of_peaks],
-                                        train_high_SNR_time
-                                         = 10, #  60 batches or  1200 times)
-                                        UPDATER_TYPE = updater_type,
-                                        FEATURE_SELETOR_TYPE='joint_convex',
-                                        number_of_features = number_of_features,
-                                        threshold_selection = 0.5,
-                                        objective_offset = 1,  
-                                        sparsity_coef = sparsity_val,
-                                        smoothness_coef = smoothness_val,
-                                        num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
-                                        past_batch_decay_factor = decay_factor,
-                                        RANDOM_INITIAL_FEATURES=False,
-                                        encoder_change_mode = encoder_change_mode,
-                                        change_sim_c_at_cycle = change_sim_c_at_cycle,
-                                        random_seed=random_seed
-                    )
-                    print("********************************************")
+    #                 updater_type = "smooth_batch"
+                    
+    #                 print("********************************************")
+    #                 print(f'running experiment convex feature selection')
+    #                 run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+    #                                     data_dump_folder = data_dump_folder,
+    #                                     norm_val= [mean_first_peak, std_of_peaks],
+    #                                     norm_var_2= [mean_second_peak, std_of_peaks],
+    #                                     train_high_SNR_time
+    #                                      = 10, #  60 batches or  1200 times)
+    #                                     UPDATER_TYPE = updater_type,
+    #                                     FEATURE_SELETOR_TYPE='joint_convex',
+    #                                     number_of_features = number_of_features,
+    #                                     threshold_selection = 0.5,
+    #                                     objective_offset = 1,  
+    #                                     sparsity_coef = sparsity_val,
+    #                                     smoothness_coef = smoothness_val,
+    #                                     num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+    #                                     past_batch_decay_factor = decay_factor,
+    #                                     RANDOM_INITIAL_FEATURES=False,
+    #                                     encoder_change_mode = encoder_change_mode,
+    #                                     change_sim_c_at_cycle = change_sim_c_at_cycle,
+    #                                     random_seed=random_seed
+    #                 )
+    #                 print("********************************************")
+                    
+                    
+    #                 updater_type = "smooth_batch_with_full_feature"
+                    
+    #                 print("********************************************")
+    #                 print(f'running experiment convex feature selection')
+    #                 run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+    #                                     data_dump_folder = data_dump_folder,
+    #                                     norm_val= [mean_first_peak, std_of_peaks],
+    #                                     norm_var_2= [mean_second_peak, std_of_peaks],
+    #                                     train_high_SNR_time
+    #                                      = 10, #  60 batches or  1200 times)
+    #                                     UPDATER_TYPE = updater_type,
+    #                                     FEATURE_SELETOR_TYPE='joint_convex',
+    #                                     number_of_features = number_of_features,
+    #                                     threshold_selection = 0.5,
+    #                                     objective_offset = 1,  
+    #                                     sparsity_coef = sparsity_val,
+    #                                     smoothness_coef = smoothness_val,
+    #                                     num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+    #                                     past_batch_decay_factor = decay_factor,
+    #                                     RANDOM_INITIAL_FEATURES=False,
+    #                                     encoder_change_mode = encoder_change_mode,
+    #                                     change_sim_c_at_cycle = change_sim_c_at_cycle,
+    #                                     random_seed=random_seed
+    #                 )
+    #                 print("********************************************")
+    
+    
+        # lasso feature selection
+    #lasso_alphas = [0.01, 0.1, 1, 10]
+    lasso_alphas = [10]
+    lasso_thresholds = [0]
+    
+    feature_selector_type = 'lasso'
+    updater_type = "smooth_batch"
+    
+    for a in lasso_alphas:
+        for lasso_threshold in lasso_thresholds:
+    
+            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                 random_seed=random_seed,
+                            data_dump_folder = data_dump_folder,
+                            norm_val= [mean_first_peak, std_of_peaks],
+                            norm_var_2= [mean_second_peak, std_of_peaks],
+                            train_high_SNR_time= 10, #  60 batches or  1200 times)
+                            FEATURE_SELETOR_TYPE=feature_selector_type,
+                            UPDATER_TYPE = updater_type,
+                            lasso_alpha = a, 
+                            lasso_threshold = lasso_threshold,
+                            RANDOM_INITIAL_FEATURES=False,
+                            encoder_change_mode = encoder_change_mode,
+                            change_sim_c_at_cycle = change_sim_c_at_cycle,
+                            )
+    
+    # updater_type = "smooth_batch_with_full_feature"
+    # for a in lasso_alphas:
+    #     for lasso_threshold in lasso_thresholds:
+    
+    #         run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+    #                              random_seed=random_seed,
+    #                         data_dump_folder = data_dump_folder,
+    #                         norm_val= [mean_first_peak, std_of_peaks],
+    #                         norm_var_2= [mean_second_peak, std_of_peaks],
+    #                         train_high_SNR_time= 10, #  60 batches or  1200 times)
+    #                         FEATURE_SELETOR_TYPE=feature_selector_type,
+    #                         UPDATER_TYPE = updater_type,
+    #                         lasso_alpha = a, 
+    #                         lasso_threshold = lasso_threshold,
+    #                         RANDOM_INITIAL_FEATURES=False,
+    #                         encoder_change_mode = encoder_change_mode,
+    #                         change_sim_c_at_cycle = change_sim_c_at_cycle,
+    #                         )
                     
 
 
@@ -500,6 +577,7 @@ if "compare_convex_smooth" in exp_types_to_run:
                     print("********************************************")
     
     
+    # then you can run the this file using CLI python tools
     
     
     
