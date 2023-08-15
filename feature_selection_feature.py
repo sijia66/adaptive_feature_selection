@@ -1082,6 +1082,8 @@ class LassoFeatureSelector(FeatureSelector):
         self.max_iter = kwargs['max_iter'] if 'max_iter' in kwargs.keys() else self.DEFAULT_MAX_ITERATION
         self.current_lasso_threshold = kwargs['lasso_threshold'] if 'lasso_threshold' in kwargs else 1.0
 
+        # get the number of features from the sim
+        self._number_of_features = kwargs.pop("number_of_features", None)
         self._adaptive_lasso_flag = kwargs['adaptive_lasso_flag'] if 'adaptive_lasso_flag' in kwargs else False
         self._init_lasso_regression(self.current_lasso, 
                                    self.max_iter)
@@ -1134,9 +1136,15 @@ class LassoFeatureSelector(FeatureSelector):
 
         weights = self.get_feature_weights()
         weights_norm = np.linalg.norm(weights, axis=1)
-        # threshold the values and calc the active features.
-        selected_indices = np.argwhere(
-            weights_norm >= self.current_lasso_threshold)
+
+        # sort the weights_norm in descending order
+        # and get top N number of features
+        if self._number_of_features is not None:
+            selected_indices = np.argsort(weights_norm)[::-1][:self._number_of_features]
+        else:
+            # threshold the values and calc the active features.
+            selected_indices = np.argwhere(
+                weights_norm >= self.current_lasso_threshold)
 
         # we are gonna take the intersection with exisiting features
         all_selected_features = np.full(
