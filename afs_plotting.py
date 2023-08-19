@@ -135,7 +135,7 @@ def plot_feature_selection(active_feat_set_list, ax = None,
         
         #color true to yellow
     cmap = colors.ListedColormap(['yellow'])
-    ax.imshow(active_feat_heat_map.T, cmap = cmap)
+    ax.imshow(active_feat_heat_map.T, cmap = cmap, aspect = 'auto', interpolation = 'none')
 
    
     cmap.set_bad(color='blue')
