@@ -1,6 +1,6 @@
 # Installation 
 
-One can install the Python package dependencies via the attached environment.yml file.  TO the simulations, one will need to install the [sijia branch](https://github.com/aolabNeuro/brain-python-interface/tree/sijia) from the aolab bmi3d repository. This branch has the necessary simulation components to run the simulations. 
+One can install the Python package dependencies via the attached environment.yml file.  To do the simulations, one will need to install the [sijia branch](https://github.com/aolabNeuro/brain-python-interface/tree/sijia) from the aolab bmi3d repository. This branch has the necessary simulation components to run the simulations. 
 
 
 # encoder setup 
