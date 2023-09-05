@@ -139,9 +139,13 @@ class EncoderChanger():
 class FeatureSelector():
     
     def __init__(self, *args, **kwargs):
-
-        #for multiple inheritance purposes
-        super().__init__(*args, **kwargs)
+        
+        if len(super().__class__.__bases__) == 1 and super().__class__.__bases__[0] == object:
+            print("Use feature selector as a base class")
+        else:
+            print("Use feature selector as a class featurew with a a parent class")
+            super().__init__(*args, **kwargs)
+            
         print('in feature selector mod')
         
         self._init_feature_transformer(*args, **kwargs)
@@ -653,7 +657,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         super().__init__(*args, **kwargs)
 
         self.train_high_SNR_time = kwargs.pop('train_high_SNR_time', 5)
-        self.N_TOTAL_AVAIL_FEATS = 128
+        self.N_TOTAL_AVAIL_FEATS = kwargs.pop('n_total_avail_feats', 128)
         
         # the stuff for the achieving some fraction of the feature selection method
         self._objective_offset = kwargs.pop('objective_offset', 1)
