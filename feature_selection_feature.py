@@ -869,7 +869,8 @@ class JointConvexFeatureSelector(FeatureSelector):
         if number_of_features is not None:
             print("doing feature selection with number of features", number_of_features)
             constraints = [theta >=0.0,  theta <= 1, 
-                        cp.sum(theta) <=  number_of_features]
+                           cp.sum(theta) >=  number_of_features, 
+                           cp.sum(theta) <=  number_of_features]
         else:
             constraints = [theta >=0.0,  theta <= 1]
         
