@@ -16,8 +16,9 @@ dependencies:
   - chardet=4.0.0=py38h06a4308_1003
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - conda=22.11.1=py38h06a4308_4
-  - conda-build=3.23.3=py38h06a4308_0
+  - conda-build=3.24.0=py38h06a4308_0
   - conda-package-handling=1.9.0=py38h5eee18b_1
+  - configurable-http-proxy=4.0.1=node6_0
   - cryptography=38.0.1=py38h9ce1e76_0
   - debugpy=1.5.1=py38h295c915_0
   - decorator=5.1.1=pyhd3eb1b0_0
@@ -35,6 +36,7 @@ dependencies:
   - ld_impl_linux-64=2.38=h1181459_1
   - libarchive=3.6.1=hab531cd_0
   - libffi=3.4.2=h6a678d5_6
+  - libgcc=7.2.0=h69d50b8_2
   - libgcc-ng=11.2.0=h1234567_1
   - libgomp=11.2.0=h1234567_1
   - liblief=0.12.3=h6a678d5_0
@@ -45,7 +47,8 @@ dependencies:
   - matplotlib-inline=0.1.6=py38h06a4308_0
   - ncurses=6.3=h5eee18b_3
   - nest-asyncio=1.5.6=py38h06a4308_0
-  - openssl=1.1.1s=h7f8727e_0
+  - nodejs=6.11.2=h3db8ef7_0
+  - openssl=1.1.1t=h7f8727e_0
   - packaging=22.0=py38h06a4308_0
   - parso=0.8.3=pyhd3eb1b0_0
   - patch=2.7.6=h7b6447c_1001
@@ -83,6 +86,7 @@ dependencies:
   - stack_data=0.2.0=pyhd3eb1b0_0
   - tk=8.6.12=h1ccaba5_0
   - toml=0.10.2=pyhd3eb1b0_0
+  - tomli=2.0.1=py38h06a4308_0
   - toolz=0.12.0=py38h06a4308_0
   - tqdm=4.64.1=py38h06a4308_0
   - traitlets=5.7.1=py38h06a4308_0
@@ -91,21 +95,25 @@ dependencies:
   - wheel=0.37.1=pyhd3eb1b0_0
   - xz=5.2.8=h5eee18b_0
   - yaml=0.2.5=h7b6447c_0
+  - yarn=1.22.19=h06a4308_0
   - zeromq=4.3.4=h2531618_0
   - zlib=1.2.13=h5eee18b_0
   - zstd=1.5.2=ha4553b6_0
   - pip:
+      - alembic==1.10.4
       - amqp==5.1.1
       - anyio==3.6.2
       - argon2-cffi==21.3.0
       - argon2-cffi-bindings==21.2.0
       - arrow==1.2.3
       - asgiref==3.6.0
+      - async-generator==1.10
       - attrs==22.2.0
       - billiard==3.6.4.0
       - bleach==5.0.1
       - blosc2==2.0.0
       - celery==5.0.2
+      - certipy==0.1.3
       - click==8.1.3
       - click-didyoumean==0.3.0
       - click-repl==0.2.0
@@ -118,20 +126,23 @@ dependencies:
       - django==3.1.4
       - ecos==2.0.12
       - et-xmlfile==1.1.0
+      - exceptiongroup==1.1.1
       - fastjsonschema==2.16.2
       - fqdn==1.5.1
       - funcsigs==1.0.2
       - future==0.18.2
       - gitdb==4.0.10
       - gitpython==3.1.8
+      - greenlet==2.0.2
       - h5py==2.10.0
       - hdfwriter==0.1.4
       - importlib-metadata==6.0.0
       - importlib-resources==5.10.2
+      - iniconfig==2.0.0
       - ipython-genutils==0.2.0
       - ipywidgets==8.0.4
       - isoduration==20.11.0
-      - jinja2==3.1.2
+      - jinja2==2.11.2
       - joblib==1.2.0
       - jsonpointer==2.3
       - jsonschema==4.17.3
@@ -140,6 +151,8 @@ dependencies:
       - jupyter-events==0.5.0
       - jupyter-server==2.0.6
       - jupyter-server-terminals==0.4.3
+      - jupyter-telemetry==0.1.0
+      - jupyterhub==4.0.0
       - jupyterlab-pygments==0.2.2
       - jupyterlab-widgets==3.0.5
       - jupyterthemes==0.20.0
@@ -147,6 +160,7 @@ dependencies:
       - kombu==5.2.4
       - latex==0.7.0
       - lesscpy==0.15.1
+      - mako==1.2.4
       - markupsafe==2.1.1
       - matplotlib==3.1.2
       - mistune==2.0.4
@@ -165,9 +179,11 @@ dependencies:
       - notebook-shim==0.2.2
       - numexpr==2.8.4
       - numpy==1.20.3
+      - oauthlib==3.2.2
       - openpyxl==3.0.10
       - osqp==0.6.2.post8
       - owl==0.2.1
+      - pamela==1.0.0
       - pandas==1.5.2
       - pandocfilters==1.5.0
       - patsy==0.5.3
@@ -191,6 +207,7 @@ dependencies:
       - pyrsistent==0.19.3
       - pyscreeze==0.1.28
       - pyserial==3.4
+      - pytest==7.3.1
       - python-json-logger==2.0.4
       - python3-xlib==0.15
       - pytweening==1.0.4
@@ -210,6 +227,7 @@ dependencies:
       - shutilwhich==1.1.0
       - smmap==5.0.0
       - sniffio==1.3.0
+      - sqlalchemy==2.0.12
       - sqlparse==0.4.3
       - statsmodels==0.10.2
       - sympy==1.11.1
@@ -222,6 +240,7 @@ dependencies:
       - tinycss2==1.2.1
       - tornado==6.1
       - traits==6.1.0
+      - typing-extensions==4.5.0
       - uri-template==1.2.0
       - vine==5.0.0
       - webcolors==1.12
