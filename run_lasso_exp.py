@@ -2,25 +2,67 @@ import numpy as np
 from simulation_runs import run_convex_selection
 
 
-exp_types = ['lasso', 
+exp_types = [
+             'feature_gap_scan',
+             'lasso', 
              'convex',
              'joint_convex', 
              'joint_convex_init_feature', 
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['full_feature_tracking']
+exp_types_to_run = ['feature_gap_scan']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
 
 ROUND_DECIMALS = 3
 
+if "feature_gap_scan" in exp_types_to_run:
+    # actually running the experiments
+# data saving stuff
+
+    data_dump_folder = \
+    '/home/aolab/sijia/data/figure2_simulation_setup/'
+    # gap difference
+    # exp_type = 'gap_difference'
+    mean_first_peak = 50
+    std_of_peaks = 3
+    mean_differences = np.arange(0, 70,  step = 10 )
+    
+    mean_differences = [0, 60]
+    
+    for mean_diff in mean_differences:
+        mean_second_peak = mean_first_peak + mean_diff
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+        print(f'running experiment with second peak at {mean_second_peak}')
+        run_convex_selection(total_exp_time = total_exp_time, 
+                    data_dump_folder=data_dump_folder,
+                    encoder_change_mode = "same", # we don't want to change the encoder
+                    FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                    RANDOM_INITIAL_FEATURES = True,
+                    number_of_features = 32,
+                    n_neurons = N_NEURONS,   
+                    norm_val= [mean_first_peak, std_of_peaks],
+                    norm_var_2= [mean_second_peak, std_of_peaks],
+                    train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                    )
+
+
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+
+
 
 if "lasso" in exp_types_to_run:
 
     data_dump_folder = \
-    '/home/sijia66/data/part1_lasso_regression/'
+    '/home/aolab/sijia/data/'
 
         # we set up the neural populations
     mean_first_peak = 50
@@ -45,6 +87,7 @@ if "lasso" in exp_types_to_run:
                         RANDOM_INITIAL_FEATURES = True,
                         lasso_alpha = a, 
                         lasso_threshold = lasso_threshold,
+                        number_of_features = 32,
                         adaptive_lasso = adaptive_lasso,  
                         n_neurons = N_NEURONS,   
                         norm_val= [mean_first_peak, std_of_peaks],

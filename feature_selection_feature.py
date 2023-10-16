@@ -140,11 +140,11 @@ class FeatureSelector():
     
     def __init__(self, *args, **kwargs):
         
-        if len(super().__class__.__bases__) == 1 and super().__class__.__bases__[0] == object:
-            print("Use feature selector as a base class")
-        else:
-            print("Use feature selector as a class featurew with a a parent class")
-            super().__init__(*args, **kwargs)
+        # if len(super().__class__.__bases__) == 1 and super().__class__.__bases__[0] == object:
+        #     print("Use feature selector as a base class")
+        # else:
+        print("Use feature selector as a class feature with a a parent class")
+        super().__init__(*args, **kwargs)
             
         print('in feature selector mod')
         
