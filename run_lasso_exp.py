@@ -4,6 +4,7 @@ from simulation_runs import run_convex_selection
 
 exp_types = [
              'feature_gap_scan',
+             'encoder_swap',
              'lasso', 
              'convex',
              'joint_convex', 
@@ -11,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['feature_gap_scan']
+exp_types_to_run = ['encoder_swap']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -56,8 +57,30 @@ if "feature_gap_scan" in exp_types_to_run:
         print("********************************************")
         print("********************************************")
         print("********************************************")
+        
+if "encoder_swap" in exp_types_to_run:
+    # actually running the experiments
+# data saving stuff
 
+    data_dump_folder = \
+    '/home/aolab/sijia/data/figure2_simulation_setup/'
+    # gap difference
+    # exp_type = 'gap_difference'
+    mean_first_peak = 50
+    mean_second_peak = 110
+    std_of_peaks = 3
 
+    run_convex_selection(total_exp_time = total_exp_time, 
+                data_dump_folder=data_dump_folder,
+                encoder_change_mode = "swap_tuning", # we don't want to change the encoder
+                FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                RANDOM_INITIAL_FEATURES = True,
+                number_of_features = 32,
+                n_neurons = N_NEURONS,   
+                norm_val= [mean_first_peak, std_of_peaks],
+                norm_var_2= [mean_second_peak, std_of_peaks],
+                train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                )
 
 if "lasso" in exp_types_to_run:
 
