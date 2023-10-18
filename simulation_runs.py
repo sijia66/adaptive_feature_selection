@@ -53,7 +53,8 @@ def run_iter_feat_addition(total_exp_time = 60, n_neurons = 32, fraction_snr = 0
                            UPDATER_TYPE = 'smooth_batch' , #none or "smooth_batch"
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
                            random_seed = 0,
-                           RANDOM_INITIAL_FEATURES = True
+                           RANDOM_INITIAL_FEATURES = True,
+                           RANDOM_INITIAL_FEATURE_NUMBERS = None,
                            ):
     
 
@@ -820,6 +821,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
                            data_dump_folder = '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/trained_decoder/',
                            random_seed = 0,
                            RANDOM_INITIAL_FEATURES:bool = True,
+                           RANDOM_INITIAL_FEATURES_COUNT = None, 
                            **kwargs
                            ):
     
@@ -1064,17 +1066,29 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         
         if RANDOM_INITIAL_FEATURES:
             np.random.seed(random_seed)
-            k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+
+            if RANDOM_INITIAL_FEATURES_COUNT:
+                                # Create an array of False of size N_NEURONS
+                init_feat_set = np.full(N_NEURONS, False, dtype=bool)
+                # Randomly choose x indices to be True
+                true_indices = np.random.choice(N_NEURONS, 
+                                                size=RANDOM_INITIAL_FEATURES_COUNT, 
+                                                replace=False)
+                init_feat_set[true_indices] = True
+                k['init_feat_set'] = init_feat_set
+            else:
+                k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
+                
+            
         else:
             k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
+            if kwargs['init_feat_first_or_last'] == 'first':
+                k['init_feat_set'][kwargs["number_of_features"]:] = False
+            elif kwargs['init_feat_first_or_last'] == 'last':
+                k['init_feat_set'][:-kwargs["number_of_features"]] = False
+            else:
+                pass
 
-    # for k in kwargs_exps_start:
-    #     if RANDOM_INITIAL_FEATURES:
-    #         np.random.seed(random_seed)
-    #         k['init_feat_set'] = np.random.choice([True, False], size = N_NEURONS)
-    #     else:
-    #         k['init_feat_set'] = np.full(N_NEURONS, False, dtype = bool)
-    #         k['init_feat_set'][no_noise_neuron_list] = True
     print(f'we have got {len(kwargs_exps)} exps')
 
     #########################################################################################################################

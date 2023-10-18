@@ -342,6 +342,8 @@ def config_exp_conds(UPDATER_TYPE, FEATURE_SELECTOR_TYPE, random_seed, rho, batc
 
     elif FEATURE_SELECTOR_TYPE == "full":
         exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
+        if 'init_feat_first_or_last' in kwargs:
+            exp_conds = [f'{s}_init_{kwargs["init_feat_first_or_last"]}' for s in exp_conds]
     else:
         raise ValueError('Unsupported feature selector type')
     
@@ -391,7 +393,14 @@ def make_new_sim(encoder_change_mode, n_neurons,
         new_sim = old_sim_c.copy()
         # random set three quarters of the neurons to zero
         new_sim[:int(n_neurons * 0.75), : ] = 0
-        # new_sim = np.zeros_like(old_sim_c)
+    elif encoder_change_mode == "swap_top_and_bottom":
+        # get the index of the middle row
+        mid_row_index = old_sim_c.shape[0] // 2
+        # slice the array to get the upper half of the rows
+        upper_half,bottom_half  = old_sim_c[:mid_row_index, :], old_sim_c[mid_row_index:, :]
+        # concatenate the bottom half of the rows with the upper half of the rows
+        new_sim = np.concatenate((bottom_half, upper_half))
+        
     else:
         raise ValueError('Unsupported encoder change mode')
 
