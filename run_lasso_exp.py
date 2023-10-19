@@ -12,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['full_feature_tracking']
+exp_types_to_run = ['joint_convex_init_feature']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -318,12 +318,14 @@ if "joint_convex_init_feature" in exp_types_to_run:
     # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
 
     data_dump_folder = \
-    '/home/sijia66/data/part2_random_start_bottleneck_num_features/'
+    '/home/aolab/sijia/data/figure4_convex_stationary_encoder/'
     
     # we set up the neural populations
     mean_first_peak = 10
     mean_second_peak = 100
     std_of_peaks = 3
+    
+    ENCODER_CHANGE_MODE = "same"
   
         
     sparsity_array = [0.06]
@@ -334,11 +336,12 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
 
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
-    smoothness_array = [0.1]
+    smoothness_array = np.arange(0.025, 0.15, 0.025) # this is different from the start out from the full feature set
+
     num_lags_array = [3]
     
     random_seeds = [0]
-    num_of_features_array  = [16, 32, 64, 96, 128]   # specify how many features we want to use, or None
+    num_of_features_array  = [64]   # specify how many features we want to use, or None
 
 
     for sparsity_val in sparsity_array:
@@ -353,14 +356,12 @@ if "joint_convex_init_feature" in exp_types_to_run:
                             # no one can escape the beauty of python one-liner, granted at the expense of line width
                             sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
                             
-                            print("********************************************")
-                            print("********************************************")
-                            print("********************************************")
                             print(f'running experiment convex feature selection')
                             run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
                                                 data_dump_folder = data_dump_folder,
                                                 norm_val= [mean_first_peak, std_of_peaks],
                                                 norm_var_2= [mean_second_peak, std_of_peaks],
+                                                encoder_change_mode = ENCODER_CHANGE_MODE,
                                                 train_high_SNR_time
                                                     = 10, #  60 batches or  1200 times)
                                                 FEATURE_SELETOR_TYPE='joint_convex',
@@ -372,12 +373,8 @@ if "joint_convex_init_feature" in exp_types_to_run:
                                                 past_batch_decay_factor = decay_factor,
                                                 number_of_features = num_of_features,
                                                 RANDOM_INITIAL_FEATURES=True,
-                                                random_seed=random_seed
-                                                
+                                                random_seed=random_seed                  
                             )
-                            print("********************************************")
-                            print("********************************************")
-                            print("********************************************")
 
 
 if "joint_convex_encoder_change" in exp_types_to_run:
