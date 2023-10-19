@@ -1082,12 +1082,14 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
             
         else:
             k['init_feat_set'] = np.full(N_NEURONS, True, dtype = bool)
-            if kwargs['init_feat_first_or_last'] == 'first':
-                k['init_feat_set'][kwargs["number_of_features"]:] = False
-            elif kwargs['init_feat_first_or_last'] == 'last':
-                k['init_feat_set'][:-kwargs["number_of_features"]] = False
-            else:
-                pass
+            
+            if 'init_feat_first_or_last' in kwargs:
+                if kwargs['init_feat_first_or_last'] == 'first':
+                    k['init_feat_set'][kwargs["number_of_features"]:] = False
+                elif kwargs['init_feat_first_or_last'] == 'last':
+                    k['init_feat_set'][:-kwargs["number_of_features"]] = False
+                else:
+                    pass
 
     print(f'we have got {len(kwargs_exps)} exps')
 
