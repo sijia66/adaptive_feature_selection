@@ -336,13 +336,13 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
 
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
-    smoothness_array = np.arange(0.025, 0.15, 0.025) # this is different from the start out from the full feature set
+    smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
 
     num_lags_array = [3]
     
     random_seeds = [0]
-    num_of_features_array  = [64]   # specify how many features we want to use, or None
-
+    num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
+    #TODO: add 32 to that number of features array
 
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
