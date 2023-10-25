@@ -12,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['encoder_swap']
+exp_types_to_run = ['full_feature_tracking']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -119,7 +119,8 @@ if "full_feature_tracking" in exp_types_to_run:
     # updater_type = "smooth_batch"
     updater_type = "smooth_batch_with_full_feature"
     
-    random_seed = 0
+    # random_seed = 0
+    random_seeds = np.arange(10)
     
     # we set up the neural populations
     mean_first_peak = 50
@@ -154,46 +155,48 @@ if "full_feature_tracking" in exp_types_to_run:
     lasso_threshold = 0
     
     feature_selector_type = 'lasso'
-    
-    updater_type = "smooth_batch"
-    for a in lasso_alphas:
-        for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
-    
-            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                 random_seed=random_seed,
-                            data_dump_folder = data_dump_folder,
-                            norm_val= [mean_first_peak, std_of_peaks],
-                            norm_var_2= [mean_second_peak, std_of_peaks],
-                            train_high_SNR_time= 10, #  60 batches or  1200 times)
-                            FEATURE_SELETOR_TYPE=feature_selector_type,
-                            UPDATER_TYPE = updater_type,
-                            lasso_alpha = a, 
-                            lasso_threshold = lasso_threshold,
-                            number_of_features = number_of_features,
-                            RANDOM_INITIAL_FEATURES=False,
-                            encoder_change_mode = encoder_change_mode,
-                            change_sim_c_at_cycle = change_sim_c_at_cycle,
-                            )
-    
-    updater_type = "smooth_batch_with_full_feature"
-    for a in lasso_alphas:
-        for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
 
-            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                 random_seed=random_seed,
-                            data_dump_folder = data_dump_folder,
-                            norm_val= [mean_first_peak, std_of_peaks],
-                            norm_var_2= [mean_second_peak, std_of_peaks],
-                            train_high_SNR_time= 10, #  60 batches or  1200 times)
-                            FEATURE_SELETOR_TYPE=feature_selector_type,
-                            UPDATER_TYPE = updater_type,
-                            lasso_alpha = a, 
-                            lasso_threshold = lasso_threshold,
-                            number_of_features = number_of_features,
-                            RANDOM_INITIAL_FEATURES=False,
-                            encoder_change_mode = encoder_change_mode,
-                            change_sim_c_at_cycle = change_sim_c_at_cycle,
-                            )
+    for random_seed in random_seeds:
+    
+        updater_type = "smooth_batch"
+        for a in lasso_alphas:
+            for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
+        
+                run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                    random_seed=random_seed,
+                                data_dump_folder = data_dump_folder,
+                                norm_val= [mean_first_peak, std_of_peaks],
+                                norm_var_2= [mean_second_peak, std_of_peaks],
+                                train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                FEATURE_SELETOR_TYPE=feature_selector_type,
+                                UPDATER_TYPE = updater_type,
+                                lasso_alpha = a, 
+                                lasso_threshold = lasso_threshold,
+                                number_of_features = number_of_features,
+                                RANDOM_INITIAL_FEATURES=False,
+                                encoder_change_mode = encoder_change_mode,
+                                change_sim_c_at_cycle = change_sim_c_at_cycle,
+                                )
+        
+        updater_type = "smooth_batch_with_full_feature"
+        for a in lasso_alphas:
+            for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
+
+                run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                    random_seed=random_seed,
+                                data_dump_folder = data_dump_folder,
+                                norm_val= [mean_first_peak, std_of_peaks],
+                                norm_var_2= [mean_second_peak, std_of_peaks],
+                                train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                FEATURE_SELETOR_TYPE=feature_selector_type,
+                                UPDATER_TYPE = updater_type,
+                                lasso_alpha = a, 
+                                lasso_threshold = lasso_threshold,
+                                number_of_features = number_of_features,
+                                RANDOM_INITIAL_FEATURES=False,
+                                encoder_change_mode = encoder_change_mode,
+                                change_sim_c_at_cycle = change_sim_c_at_cycle,
+                                )
                     
 
 
