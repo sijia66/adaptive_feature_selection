@@ -12,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['joint_convex_init_feature']
+exp_types_to_run = ['joint_convex_encoder_change']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -341,7 +341,8 @@ if "joint_convex_init_feature" in exp_types_to_run:
     num_lags_array = [3]
     
     random_seeds = [0]
-    num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
+    #num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
+    num_of_features_array  = [24, 32, 40, 48, 56]   # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
 
     for sparsity_val in sparsity_array:
@@ -387,7 +388,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
     
     data_dump_folder = \
-    '/home/sijia66/data/encoder_dev/'
+   '/home/aolab/sijia/data/figure5_convex_encoder_change/'
     
     random_seed = 2
     
@@ -399,29 +400,29 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     change_sim_c_at_cycle = 18000 # 
     #encoder_change_mode = "drop_half_good_neurons"
     # encoder_change_mode = "swap_tuning"
-    # encoder_change_mode = "shuffle_rows"
-    encoder_change_mode= "change_to_zeros"
+    encoder_change_mode = "shuffle_rows"
+    # encoder_change_mode= "change_to_zeros"
     
     
     
-    # # without feature selection
-    feature_selector_type = "full"
+    # # # without feature selection
+    # feature_selector_type = "full"
     
         
 
-    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                        data_dump_folder = data_dump_folder,
-                        norm_val= [mean_first_peak, std_of_peaks],
-                        norm_var_2= [mean_second_peak, std_of_peaks],
-                        train_high_SNR_time
-                            = 10, #  60 batches or  1200 times)
-                        FEATURE_SELETOR_TYPE=feature_selector_type,
-                        RANDOM_INITIAL_FEATURES=False,
-                        encoder_change_mode = encoder_change_mode,
-                        change_sim_c_at_cycle = change_sim_c_at_cycle,
-                        random_seed=random_seed
-    )
-    print("********************************************")
+    # run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+    #                     data_dump_folder = data_dump_folder,
+    #                     norm_val= [mean_first_peak, std_of_peaks],
+    #                     norm_var_2= [mean_second_peak, std_of_peaks],
+    #                     train_high_SNR_time
+    #                         = 10, #  60 batches or  1200 times)
+    #                     FEATURE_SELETOR_TYPE=feature_selector_type,
+    #                     RANDOM_INITIAL_FEATURES=False,
+    #                     encoder_change_mode = encoder_change_mode,
+    #                     change_sim_c_at_cycle = change_sim_c_at_cycle,
+    #                     random_seed=random_seed
+    # )
+    # print("********************************************")
     
     
 
@@ -432,11 +433,13 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # smoothness_array = np.arange(0, 0.15, 0.025)
     sparsity_array = [0.125]
 
-    smoothness_array = [0.05]
+    smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
+    num_of_features_array  = [32]   # specify how many features we want to use, or None
     num_lags_array = [3]
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
-    decay_factor_array = [0.5]
+    decay_factor_array = [0.2]
+
     
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -453,7 +456,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                                         norm_val= [mean_first_peak, std_of_peaks],
                                         norm_var_2= [mean_second_peak, std_of_peaks],
                                         train_high_SNR_time
-                                         = 10, #  60 batches or  1200 times)
+                                            = 10, #  60 batches or  1200 times)
                                         FEATURE_SELETOR_TYPE='joint_convex',
                                         number_of_features = number_of_features,
                                         threshold_selection = 0.5,
@@ -469,29 +472,29 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                     )
                     print("********************************************")
     
-    # lasso feature selection
-    #lasso_alphas = [0.01, 0.1, 1, 10]
-    lasso_alphas = [10]
-    lasso_thresholds = [2.5]
+    # # lasso feature selection
+    # #lasso_alphas = [0.01, 0.1, 1, 10]
+    # lasso_alphas = [10]
+    # lasso_thresholds = [2.5]
     
-    feature_selector_type = 'lasso'
+    # feature_selector_type = 'lasso'
     
-    for a in lasso_alphas:
-        for lasso_threshold in lasso_thresholds:
+    # for a in lasso_alphas:
+    #     for lasso_threshold in lasso_thresholds:
     
-            run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                 random_seed=random_seed,
-                            data_dump_folder = data_dump_folder,
-                            norm_val= [mean_first_peak, std_of_peaks],
-                            norm_var_2= [mean_second_peak, std_of_peaks],
-                            train_high_SNR_time= 10, #  60 batches or  1200 times)
-                            FEATURE_SELETOR_TYPE=feature_selector_type,
-                            lasso_alpha = a, 
-                            lasso_threshold = lasso_threshold,
-                            RANDOM_INITIAL_FEATURES=False,
-                            encoder_change_mode = encoder_change_mode,
-                            change_sim_c_at_cycle = change_sim_c_at_cycle,
-                            )
+    #         run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+    #                              random_seed=random_seed,
+    #                         data_dump_folder = data_dump_folder,
+    #                         norm_val= [mean_first_peak, std_of_peaks],
+    #                         norm_var_2= [mean_second_peak, std_of_peaks],
+    #                         train_high_SNR_time= 10, #  60 batches or  1200 times)
+    #                         FEATURE_SELETOR_TYPE=feature_selector_type,
+    #                         lasso_alpha = a, 
+    #                         lasso_threshold = lasso_threshold,
+    #                         RANDOM_INITIAL_FEATURES=False,
+    #                         encoder_change_mode = encoder_change_mode,
+    #                         change_sim_c_at_cycle = change_sim_c_at_cycle,
+    #                         )
             
 
 
