@@ -7,6 +7,8 @@ import cvxpy as cp
 
 from features import SaveHDF
 
+from riglib.bmi import kfdecoder 
+
 from weights import change_target_kalman_filter_with_a_C_mat
 #import 
 
@@ -432,7 +434,58 @@ class FeatureSelector():
             else: 
                 raise Exception(f'{__name__}: feature_y_transformer specified, but feature_transformer not in kwarg.keys')
 
-from riglib.bmi import kfdecoder 
+class OracleFeatureSelector(FeatureSelector):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._change_feature_at = kwargs.pop('change_feature_at', 18000) # default to 5 minutes
+        self._change_feature_mode = kwargs.pop('change_feature_mode', 'bottom_half')
+        self._fixed_number_of_features = kwargs.pop('number_of_features', 32)
+        self._change_features_once = True 
+
+        # print some flags
+        print("********************************************************")
+        print(f'Oracle feature selection: feature selection at {self._change_feature_at}\n')
+        print("********************************************************")
+
+    def measure_features(self, feature_matrix, target_matrix):
+        '''
+        feature_matrix[np.array]: n_time_points by n_features
+        target_matrix[np.array]: n_time_points by n_target fitting vars
+        '''
+        self.feature_measure_count += 1
+
+        self.determine_change_features()
+    
+    def determine_change_features(self):
+
+
+        if (self.feature_measure_count <= self._change_feature_at):
+            return
+
+        if self._change_features_once:
+
+            if self._change_feature_mode == 'bottom_half':
+                feat_set = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
+
+                # then set the bottom half to true
+                feat_set[-self._fixed_number_of_features:] = True
+
+                self._active_feat_set = feat_set
+            else:
+                raise Exception('only supports bottom half for now')
+            
+            
+            # set the flags to make these changes effective. 
+            self.decoder_change_flag = True
+            self.feature_change_flag = True
+            self._change_features_once = False
+
+            print(f'Changed the feature to Oracle at {self.feature_measure_count}', self._change_one_flag)
+
+
+
+
 class SNRFeatureSelector(FeatureSelector):
     def __init__(self, *args, **kwargs):
 

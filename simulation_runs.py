@@ -947,7 +947,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
 
     ############################################################################################################################
     # ## feature selector setup
-    from feature_selection_feature import FeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector, LassoFeatureSelector
+    from feature_selection_feature import FeatureSelector, OracleFeatureSelector, ConvexFeatureSelector, JointConvexFeatureSelector, LassoFeatureSelector
 
 
 
@@ -980,6 +980,14 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
         kwargs_feature['lasso_threshold'] = kwargs['lasso_threshold'] if 'lasso_threshold' in kwargs else 1.0
         kwargs_feature['adaptive_lasso_flag'] = kwargs["adaptive_lasso_flag"] if 'adaptive_lasso_flag' in kwargs else False
         kwargs_feature["number_of_features"] = kwargs["number_of_features"]
+    elif FEATURE_SELETOR_TYPE == "Oracle":
+        feats_2.append(OracleFeatureSelector)
+        kwargs_feature["number_of_features"] = kwargs["number_of_features"]
+        kwargs_feature["change_feature_at"] = kwargs["change_feature_at"]
+        kwargs_feature["change_feature_mode"] = kwargs["change_feature_mode"]
+
+
+
     elif FEATURE_SELETOR_TYPE == "full":
         feats_2.append(FeatureSelector)
     else:

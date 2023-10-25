@@ -339,6 +339,9 @@ def config_exp_conds(UPDATER_TYPE, FEATURE_SELECTOR_TYPE, random_seed, rho, batc
     elif FEATURE_SELECTOR_TYPE == "lasso":
         exp_conds = [f'lasso_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_lasso_alpha_{kwargs["lasso_alpha"]}_lasso_threshold_{kwargs["lasso_threshold"]}' for s in percent_high_SNR_noises]
 
+    elif FEATURE_SELECTOR_TYPE == "Oracle":
+        exp_conds = [f'Oracle_{1.0}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}']
+
 
     elif FEATURE_SELECTOR_TYPE == "full":
         exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}' for s in percent_high_SNR_noises]
