@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import aopy
 
 #define constants
 GLOBAL_FIGURE_VERTICAL_SIZE = 4
@@ -144,3 +145,65 @@ def plot_feature_selection(active_feat_set_list, ax = None,
     if label_y: ax.set_ylabel('Feature index')
 
     return ax
+
+CENTER_TARGET_ON = 16
+CURSOR_ENTER_CENTER_TARGET = 80
+CENTER_TARGET_OFF = 32
+REWARD = 48
+DELAY_PENALTY = 66
+TIMEOUT_PENALTY = 65
+HOLD_PENALTY = 64
+TRIAL_END = 239
+
+import functools
+
+def get_all_cursor_trajectories(exp_data_all, start_code = [20], end_codes = [REWARD, HOLD_PENALTY]):
+    
+    cursor_trajectories_list = list()
+        
+    for e in exp_data_all:
+        (cursor_trajectories, trial_segments, trial_times) = get_cursor_trajectories_from_parsed_data(e, start_code = start_code, end_codes=end_codes)
+        cursor_trajectories_list.append(cursor_trajectories)
+
+    
+    return cursor_trajectories_list
+
+def get_cursor_trajectories_from_parsed_data(exp_data, start_code = [20], end_codes = [REWARD, HOLD_PENALTY]):
+    
+    
+    events = exp_data['events']
+    cursor_kinematics = exp_data['task']['cursor'][:,[0,2]] # cursor (x, z, y) position on each bmi3d cycle
+
+    streamed_code = events['code']
+    event_cycles = events['time'] # confusingly, 'time' here refers to cycle count
+
+    trial_segments, trial_times = aopy.preproc.get_trial_segments(streamed_code, event_cycles, start_code,  end_codes)
+    trial_segments = np.array(trial_segments)
+    trial_indices = [range(t[0], t[1]) for t in trial_times]
+    cursor_trajectories = [cursor_kinematics[t] for t in trial_indices]
+    
+    return (cursor_trajectories, trial_segments, trial_times)
+
+
+
+from typing import List, Dict
+import seaborn as sns
+
+
+def plot_cursor_trajectories(cursor_trajectories: List, exp_data:Dict, exp_metadata,ax = None):
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10,10))
+
+    trials = exp_data['bmi3d_trials']
+    trial_targets = aopy.postproc.get_trial_targets(trials['trial'], trials['target'][:,[0,2]]) # (x, z, y) -> (x, y)
+    unique_targets = np.unique(np.concatenate(([t[1] for t in trial_targets], trial_targets[0])), axis=0)
+
+
+    target_radius =  exp_metadata['target_radius']
+    bounds = [-11, 11, -11, 11]
+    
+    sns.color_palette("dark:salmon_r", as_cmap=True)
+
+    aopy.visualization.plot_trajectories(cursor_trajectories, bounds = bounds, ax = ax)
+    aopy.visualization.plot_targets(unique_targets, target_radius, ax = ax)
