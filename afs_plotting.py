@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import aopy
+import string
 
 #define constants
 GLOBAL_FIGURE_VERTICAL_SIZE = 4
@@ -9,6 +10,48 @@ GLOBAL_FIGURE_VERTICAL_SIZE = 4
 #useful ultility function copiee and  
 X_VEL_STATE_IND = 3
 Y_VEL_STATE_IND = 5
+
+
+def subplots_with_labels(n_rows, n_cols, return_labeled_axes = False,
+                       rel_label_x = -0.25, rel_label_y = 1.1, label_font_size = 11, 
+                       constrained_layout = True, **kwargs):
+
+
+    # if more than 26 subplots, raise an error
+    if n_rows*n_cols > 26:
+        raise ValueError("More than 26 subplots requested, running out of single letters to label them with!")
+
+    # make a list of letters to use as labels
+
+    alphabets = string.ascii_uppercase
+    labels = alphabets[:n_rows*n_cols]
+
+    # tabulate the labels into n_rows by n_cols array
+    labels = np.array(list(labels)).reshape((n_rows,n_cols))
+
+    # make a string where rows are separated by semicolons
+    labels = ";".join(["".join(row) for row in labels])
+
+    # make the figure and axes
+    fig, labels_axes = plt.subplot_mosaic(labels,
+                                        constrained_layout=constrained_layout,
+                                        **kwargs)
+
+
+    for n, (key, ax) in enumerate(labels_axes.items()):
+        ax.text(rel_label_x, rel_label_y, 
+                key, transform=ax.transAxes, 
+                size=label_font_size)
+        
+        # just annotate the axes
+    axes = list(labels_axes.values())
+    axes = np.array(axes).reshape((n_rows,n_cols))
+
+    if return_labeled_axes:
+        return fig, axes, labels_axes
+    else:
+        return fig, axes
+
 def plot_prefered_directions(C:np.ndarray, plot_states:tuple = (X_VEL_STATE_IND,Y_VEL_STATE_IND),
             ax=None, 
             invert=False, **kwargs):
