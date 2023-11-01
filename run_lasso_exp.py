@@ -120,7 +120,7 @@ if "full_feature_tracking" in exp_types_to_run:
     updater_type = "smooth_batch_with_full_feature"
     
     # random_seed = 0
-    random_seeds = np.arange(10)
+    random_seeds =[0]
     
     # we set up the neural populations
     mean_first_peak = 50
@@ -155,49 +155,49 @@ if "full_feature_tracking" in exp_types_to_run:
     lasso_threshold = 0
     
     feature_selector_type = 'lasso'
+    encoder_change_modes = ["same"]
 
     for random_seed in random_seeds:
-    
-        updater_type = "smooth_batch"
-        for a in lasso_alphas:
-            for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
-        
-                run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                    random_seed=random_seed,
-                                data_dump_folder = data_dump_folder,
-                                norm_val= [mean_first_peak, std_of_peaks],
-                                norm_var_2= [mean_second_peak, std_of_peaks],
-                                train_high_SNR_time= 10, #  60 batches or  1200 times)
-                                FEATURE_SELETOR_TYPE=feature_selector_type,
-                                UPDATER_TYPE = updater_type,
-                                lasso_alpha = a, 
-                                lasso_threshold = lasso_threshold,
-                                number_of_features = number_of_features,
-                                RANDOM_INITIAL_FEATURES=False,
-                                encoder_change_mode = encoder_change_mode,
-                                change_sim_c_at_cycle = change_sim_c_at_cycle,
-                                )
-        
-        updater_type = "smooth_batch_with_full_feature"
-        for a in lasso_alphas:
-            for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
+        for encoder_change_mode in encoder_change_modes:
+            updater_type = "smooth_batch"
+            for a in lasso_alphas:
+                for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
+            
+                    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                        random_seed=random_seed,
+                                    data_dump_folder = data_dump_folder,
+                                    norm_val= [mean_first_peak, std_of_peaks],
+                                    norm_var_2= [mean_second_peak, std_of_peaks],
+                                    train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                    FEATURE_SELETOR_TYPE=feature_selector_type,
+                                    UPDATER_TYPE = updater_type,
+                                    lasso_alpha = a, 
+                                    lasso_threshold = lasso_threshold,
+                                    number_of_features = number_of_features,
+                                    RANDOM_INITIAL_FEATURES=False,
+                                    encoder_change_mode = encoder_change_mode,
+                                    change_sim_c_at_cycle = change_sim_c_at_cycle,
+                                    )
+            
+            updater_type = "smooth_batch_with_full_feature"
+            for a in lasso_alphas:
+                for lasso_threshold, number_of_features in zip(lasso_thresholds, number_of_features_array):
 
-                run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-                                    random_seed=random_seed,
-                                data_dump_folder = data_dump_folder,
-                                norm_val= [mean_first_peak, std_of_peaks],
-                                norm_var_2= [mean_second_peak, std_of_peaks],
-                                train_high_SNR_time= 10, #  60 batches or  1200 times)
-                                FEATURE_SELETOR_TYPE=feature_selector_type,
-                                UPDATER_TYPE = updater_type,
-                                lasso_alpha = a, 
-                                lasso_threshold = lasso_threshold,
-                                number_of_features = number_of_features,
-                                RANDOM_INITIAL_FEATURES=False,
-                                encoder_change_mode = encoder_change_mode,
-                                change_sim_c_at_cycle = change_sim_c_at_cycle,
-                                )
-                    
+                    run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
+                                        random_seed=random_seed,
+                                    data_dump_folder = data_dump_folder,
+                                    norm_val= [mean_first_peak, std_of_peaks],
+                                    norm_var_2= [mean_second_peak, std_of_peaks],
+                                    train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                    FEATURE_SELETOR_TYPE=feature_selector_type,
+                                    UPDATER_TYPE = updater_type,
+                                    lasso_alpha = a, 
+                                    lasso_threshold = lasso_threshold,
+                                    number_of_features = number_of_features,
+                                    RANDOM_INITIAL_FEATURES=False,
+                                    encoder_change_mode = encoder_change_mode,
+                                    change_sim_c_at_cycle = change_sim_c_at_cycle,
+                                    )
 
 
 
@@ -464,7 +464,8 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
     decay_factor_array = [0.2]
 
-    random_seeds = np.arange(10)
+    # random_seeds = np.arange(10)
+    random_seeds = [2]
     
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -491,7 +492,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                                             smoothness_coef = smoothness_val,
                                             num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
                                             past_batch_decay_factor = decay_factor,
-                                            RANDOM_INITIAL_FEATURES=False,
+                                            RANDOM_INITIAL_FEATURES=True,
                                             encoder_change_mode = encoder_change_mode,
                                             change_sim_c_at_cycle = change_sim_c_at_cycle,
                                             random_seed=random_seed
