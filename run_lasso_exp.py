@@ -12,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['joint_convex_encoder_change']
+exp_types_to_run = ['full_feature_tracking']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -150,12 +150,12 @@ if "full_feature_tracking" in exp_types_to_run:
         # lasso feature selection
     #lasso_alphas = [0.01, 0.1, 1, 10]
     lasso_alphas = [10]
-    lasso_thresholds = [0,1]
-    number_of_features_array = [32, 64]
-    lasso_threshold = 0
+    lasso_thresholds = [1]
+    number_of_features_array = [ 64]
+
     
     feature_selector_type = 'lasso'
-    encoder_change_modes = ["same"]
+    encoder_change_modes = ["same", "shuffle_rows"]
 
     for random_seed in random_seeds:
         for encoder_change_mode in encoder_change_modes:
@@ -168,13 +168,13 @@ if "full_feature_tracking" in exp_types_to_run:
                                     data_dump_folder = data_dump_folder,
                                     norm_val= [mean_first_peak, std_of_peaks],
                                     norm_var_2= [mean_second_peak, std_of_peaks],
-                                    train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                    train_high_SNR_time= 0, #  60 batches or  1200 times)
                                     FEATURE_SELETOR_TYPE=feature_selector_type,
                                     UPDATER_TYPE = updater_type,
                                     lasso_alpha = a, 
                                     lasso_threshold = lasso_threshold,
                                     number_of_features = number_of_features,
-                                    RANDOM_INITIAL_FEATURES=False,
+                                    RANDOM_INITIAL_FEATURES=True,
                                     encoder_change_mode = encoder_change_mode,
                                     change_sim_c_at_cycle = change_sim_c_at_cycle,
                                     )
@@ -188,13 +188,13 @@ if "full_feature_tracking" in exp_types_to_run:
                                     data_dump_folder = data_dump_folder,
                                     norm_val= [mean_first_peak, std_of_peaks],
                                     norm_var_2= [mean_second_peak, std_of_peaks],
-                                    train_high_SNR_time= 10, #  60 batches or  1200 times)
+                                    train_high_SNR_time= 0, #  60 batches or  1200 times)
                                     FEATURE_SELETOR_TYPE=feature_selector_type,
                                     UPDATER_TYPE = updater_type,
                                     lasso_alpha = a, 
                                     lasso_threshold = lasso_threshold,
                                     number_of_features = number_of_features,
-                                    RANDOM_INITIAL_FEATURES=False,
+                                    RANDOM_INITIAL_FEATURES=True,
                                     encoder_change_mode = encoder_change_mode,
                                     change_sim_c_at_cycle = change_sim_c_at_cycle,
                                     )
