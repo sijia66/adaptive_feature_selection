@@ -12,7 +12,7 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking']
-exp_types_to_run = ['full_feature_tracking']
+exp_types_to_run = ['encoder_swap']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -71,25 +71,25 @@ if "encoder_swap" in exp_types_to_run:
     std_of_peaks = 3
     NUM_INITIAL_FEATURES = 32
     
-    ENCODER_CHANGE_MODE = "swap_top_and_bottom"
+    ENCODER_CHANGE_MODE = "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
      
 
 
-    # run_convex_selection(total_exp_time = total_exp_time, 
-    #             data_dump_folder=data_dump_folder,
-    #             encoder_change_mode = ENCODER_CHANGE_MODE, # we don't want to change the encoder
-    #             change_sim_c_at_cycle = change_sim_c_at_cycle,
-    #             FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
-    #             RANDOM_INITIAL_FEATURES = False,
-    #             RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
-    #             number_of_features = 32,
-    #             init_feat_first_or_last = "first",
-    #             n_neurons = N_NEURONS,   
-    #             norm_val= [mean_first_peak, std_of_peaks],
-    #             norm_var_2= [mean_second_peak, std_of_peaks],
-    #             train_high_SNR_time  = 10, #  60 batches or  1200 times)
-    #             )
+    run_convex_selection(total_exp_time = total_exp_time, 
+                data_dump_folder=data_dump_folder,
+                encoder_change_mode = ENCODER_CHANGE_MODE, # we don't want to change the encoder
+                change_sim_c_at_cycle = change_sim_c_at_cycle,
+                FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                RANDOM_INITIAL_FEATURES = False,
+                RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
+                number_of_features = 32,
+                init_feat_first_or_last = "first",
+                n_neurons = N_NEURONS,   
+                norm_val= [mean_first_peak, std_of_peaks],
+                norm_var_2= [mean_second_peak, std_of_peaks],
+                train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                )
     
     # oracle feature selection
     change_feature_at_by_batch = 30  
@@ -99,7 +99,7 @@ if "encoder_swap" in exp_types_to_run:
             change_sim_c_at_cycle = change_sim_c_at_cycle,
             FEATURE_SELETOR_TYPE='Oracle', # this is the default setting and does not do anything
             change_feature_at = change_feature_at_by_batch,
-            change_feature_mode = "bottom_half",
+            change_feature_mode = "change_to_new_sim_c",
             RANDOM_INITIAL_FEATURES = False,
             RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
             number_of_features = 32,
