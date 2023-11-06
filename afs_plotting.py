@@ -250,3 +250,21 @@ def plot_cursor_trajectories(cursor_trajectories: List, exp_data:Dict, exp_metad
 
     aopy.visualization.plot_trajectories(cursor_trajectories, bounds = bounds, ax = ax)
     aopy.visualization.plot_targets(unique_targets, target_radius, ax = ax)
+
+
+def calculate_encoder_weight_change(sim_c, new_sim_c=None,
+                                     include_new_sim_c=False, nnum_of_repeats_before=30, num_of_repeats_after=30):
+    good_features_initial = (np.linalg.norm(sim_c, axis=1))
+    if include_new_sim_c:
+        good_features_after_shuffled = (np.linalg.norm(new_sim_c, axis=1))
+    else:
+        good_features_after_shuffled = good_features_initial
+
+    old_features_before_shuffled_repeat = np.repeat(good_features_initial[:, np.newaxis],
+                                                    nnum_of_repeats_before, axis = 1)
+    new_features_after_shuffled_repeat = np.repeat(good_features_after_shuffled[:, np.newaxis],
+                                                    num_of_repeats_after, axis = 1)
+
+    encoder_weight_change = np.concatenate((old_features_before_shuffled_repeat,
+                                            new_features_after_shuffled_repeat), axis = 1)
+    return encoder_weight_change

@@ -441,7 +441,9 @@ class OracleFeatureSelector(FeatureSelector):
         self._change_feature_at = kwargs.pop('change_feature_at', 18000) # default to 5 minutes
         self._change_feature_mode = kwargs.pop('change_feature_mode', 'bottom_half')
         self._fixed_number_of_features = kwargs.pop('number_of_features', 32)
-        self._change_features_once = True 
+        self._change_features_once = True
+
+        self._new_sim_c = kwargs.pop('new_sim_c', None)
 
         # print some flags
         print("********************************************************")
@@ -472,6 +474,25 @@ class OracleFeatureSelector(FeatureSelector):
                 feat_set[-self._fixed_number_of_features:] = True
 
                 self._active_feat_set = feat_set
+            elif self._change_feature_mode == 'change_to_new_sim_c':
+                sim_c_norm = np.linalg.norm(self._new_sim_c, axis = 1)
+
+                sim_c_norm_threshold = np.mean(sim_c_norm)
+
+                feat_set = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
+
+                which_neurons_to_select = np.squeeze(np.argwhere(sim_c_norm > sim_c_norm_threshold))
+
+                if len(which_neurons_to_select) > self._fixed_number_of_features:
+                    which_neurons_to_select = which_neurons_to_select[:self._fixed_number_of_features]
+
+
+
+                # set the feature by thresholding the norm
+                feat_set[which_neurons_to_select] = True
+
+                self._active_feat_set = feat_set
+
             else:
                 raise Exception('only supports bottom half for now')
             
