@@ -322,11 +322,15 @@ def config_feature_selector(FEATURE_SELECTOR_TYPE, feats, feats_2, **kwargs):
 
 
 def config_exp_conds(UPDATER_TYPE, FEATURE_SELECTOR_TYPE, random_seed, rho, batch_len,
-                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
+                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises, scan_bimodal_weight = False, bimodal_weight  = [0.5, 0.5],
                      **kwargs):
     
     if FEATURE_SELECTOR_TYPE  in  ["convex", "joint_convex"]:
-        exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' for s in percent_high_SNR_noises]
+
+        if not scan_bimodal_weight:
+            exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' for s in percent_high_SNR_noises]
+        else:
+            exp_conds = [f'{FEATURE_SELECTOR_TYPE}_{s}_{random_seed}_noise_{fixed_noise_level}_{n_neurons}_{norm_var_2[0]}_{norm_var_2[1]}_bimodal_weight_{bimodal_weight[0]}_clda_rho_{rho}_batchlen_{batch_len}_sparsity_{kwargs["sparsity_coef"]}_smooth_{kwargs["smoothness_coef"]}_lags_{kwargs["num_of_lags"]}_decay_{kwargs["past_batch_decay_factor"]}' for s in percent_high_SNR_noises]
 
         
         if "number_of_features" in kwargs.keys():

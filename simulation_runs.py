@@ -822,6 +822,7 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
                            random_seed = 0,
                            RANDOM_INITIAL_FEATURES:bool = True,
                            RANDOM_INITIAL_FEATURES_COUNT = None, 
+                           scan_bimodal_weight = False, 
                            **kwargs
                            ):
     
@@ -830,7 +831,8 @@ def run_convex_selection(total_exp_time = 60, n_neurons = 32, fraction_snr = 0.2
     # set up file names for comparision
     
     exp_conds = config_exp_conds(UPDATER_TYPE, FEATURE_SELETOR_TYPE, random_seed, rho, batch_len,
-                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises,
+                     fixed_noise_level, n_neurons, norm_var_2, percent_high_SNR_noises, 
+                     scan_bimodal_weight = scan_bimodal_weight, bimodal_weight = bimodal_weight,
                      **kwargs)
 
     NUM_NOISES = len(percent_high_SNR_noises)

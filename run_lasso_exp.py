@@ -12,8 +12,9 @@ exp_types = [
              'joint_convex_encoder_change',
              'compare_convex_smooth',
              'full_feature_tracking',
-             'total_number_of_features',]
-exp_types_to_run = ['total_number_of_features']
+             'total_number_of_features',
+             'fraction_of_neurons']
+exp_types_to_run = ['fraction_of_neurons']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -535,7 +536,7 @@ if "total_number_of_features" in exp_types_to_run:
 
     num_lags_array = [3]
     
-    random_seeds = [0]
+    random_seeds = np.arange(10)
     #num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
     num_of_features_array  = [32]   # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
@@ -574,5 +575,82 @@ if "total_number_of_features" in exp_types_to_run:
                                                     random_seed=random_seed                  
                                 )
     
+
+if "fraction_of_neurons" in exp_types_to_run:
+    """
+    convex basically means that we are doing the joint objective feature selection. 
+    this setting is set as a string in FEATURE_SELETOR_TYPE = joint_convex
+    """
+
+    # noise scan
+    # data_dump_folder = \
+    # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
+
+    data_dump_folder = \
+    '/home/aolab/sijia/data/figure7_fraction_of_neurons/'
+    total_number_of_neurons_array = [32, 64, 128, 256, 512, 1024]
     
+    # we set up the neural populations
+    mean_first_peak = 10
+    mean_second_peak = 100
+    std_of_peaks = 3
+    
+    ENCODER_CHANGE_MODE = "same"
+  
+        
+    sparsity_array = [0.06]
+    # sparsity_array = np.arange(0.05, 0.15, 0.01)
+    # decay_factor_array  = np.arange(0, 1.2, 0.2)
+    # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
+    decay_factor_array = [0.2]
+
+
+    #smoothness_array =  np.arange(0.025, 0.15, 0.025)
+    smoothness_array = [0.1]
+
+    num_lags_array = [3]
+    
+    random_seeds = [0]
+    #num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
+    num_of_features_array  = [32]   # specify how many features we want to use, or None
+
+    n_neurons = 128
+
+    fraction_of_neurons_array =  np.arange(0.1, 1.1, 0.1)
+
+    for sparsity_val in sparsity_array:
+        for smoothness_val in smoothness_array:
+            for num_lag in num_lags_array:
+                for decay_factor in  decay_factor_array:
+                    
+                    for random_seed in random_seeds:
+                        
+                        for num_of_features in num_of_features_array:
+                            for fraction_of_neurons in fraction_of_neurons_array:
+
+                                # no one can escape the beauty of python one-liner, granted at the expense of line width
+                                sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
+                                
+                                print(f'running experiment convex feature selection')
+                                run_convex_selection(total_exp_time = total_exp_time,
+                                                    n_neurons =  n_neurons,
+                                                    data_dump_folder = data_dump_folder,
+                                                    norm_val= [mean_first_peak, std_of_peaks],
+                                                    norm_var_2= [mean_second_peak, std_of_peaks],
+                                                    bimodal_weight = [fraction_of_neurons, 1-fraction_of_neurons],
+                                                    scan_bimodal_weight = True,
+                                                    encoder_change_mode = ENCODER_CHANGE_MODE,
+                                                    train_high_SNR_time
+                                                        = 10, #  60 batches or  1200 times)
+                                                    FEATURE_SELETOR_TYPE='joint_convex',
+                                                    threshold_selection = 0.5,
+                                                    objective_offset = 1,
+                                                    sparsity_coef = sparsity_val,
+                                                    smoothness_coef = smoothness_val,
+                                                    num_of_lags = num_lag,  #  this is the K in the formulation, the number of batch updated feature scores we expect it to be.
+                                                    past_batch_decay_factor = decay_factor,
+                                                    number_of_features = num_of_features,
+                                                    RANDOM_INITIAL_FEATURES=True,
+                                                    random_seed=random_seed                  
+                                )
     
