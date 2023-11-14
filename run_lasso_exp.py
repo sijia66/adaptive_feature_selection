@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['fraction_of_neurons']
+exp_types_to_run = ['total_number_of_features', 'fraction_of_neurons']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -346,7 +346,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     '/home/aolab/sijia/data/figure4_convex_stationary_encoder/'
     
     # we set up the neural populations
-    mean_first_peak = 10
+    mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
     
@@ -517,7 +517,7 @@ if "total_number_of_features" in exp_types_to_run:
     total_number_of_neurons_array = [32, 64, 128, 256, 512, 1024]
     
     # we set up the neural populations
-    mean_first_peak = 10
+    mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
     
@@ -591,7 +591,7 @@ if "fraction_of_neurons" in exp_types_to_run:
     total_number_of_neurons_array = [32, 64, 128, 256, 512, 1024]
     
     # we set up the neural populations
-    mean_first_peak = 10
+    mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
     
@@ -630,6 +630,7 @@ if "fraction_of_neurons" in exp_types_to_run:
 
                                 # no one can escape the beauty of python one-liner, granted at the expense of line width
                                 sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
+                                fraction_of_neurons = np.round(fraction_of_neurons, ROUND_DECIMALS)
                                 
                                 print(f'running experiment convex feature selection')
                                 run_convex_selection(total_exp_time = total_exp_time,
