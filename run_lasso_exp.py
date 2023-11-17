@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['total_number_of_features', 'fraction_of_neurons']
+exp_types_to_run = ['fraction_of_neurons']
 
 total_exp_time = 600# in seconds
 N_NEURONS = 128
@@ -365,9 +365,9 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
     num_lags_array = [3]
     
-    random_seeds = np.arange(10)
-    #num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
-    num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]   # specify how many features we want to use, or None
+    # random_seeds = np.arange(10)
+    random_seeds = [0]  # for the paper, we only use one random seed
+    num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
 
     for sparsity_val in sparsity_array:
@@ -606,7 +606,9 @@ if "fraction_of_neurons" in exp_types_to_run:
 
 
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
-    smoothness_array = [0.1]
+    # the first batch of experiments was only with 0.1
+    smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
+
 
     num_lags_array = [3]
     
