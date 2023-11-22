@@ -54,6 +54,33 @@ def subplots_with_labels(n_rows, n_cols,
         return fig, axes, labels_axes
     else:
         return fig, axes
+    
+def concatenate_encoder_weights_feature_sets(encoder_weight, exp_data):
+    num_batches = encoder_weight.shape[0]
+
+    num_blank_columns = 5
+    blank_columns = np.ones((num_blank_columns, encoder_weight.shape[0]))
+
+    feature_sets_one_cond = exp_data[0]['feature_selection']['feat_set']
+    feature_sets_the_other_cond = exp_data[-1]['feature_selection']['feat_set']
+    # make these numpy arrays
+    feature_sets_one_cond = np.array(feature_sets_one_cond)
+    feature_sets_the_other_cond = np.array(feature_sets_the_other_cond)
+    # concatenate the feature sets along the second axis
+    feature_sets = np.concatenate((feature_sets_one_cond, blank_columns, feature_sets_the_other_cond), axis=0)
+
+    # add the encoder weights to the feature sets
+    encoder_weights = encoder_weight.T
+    # normalize to 0 and 1
+    encoder_weights = (encoder_weights - encoder_weights.min()) / (encoder_weights.max() - encoder_weights.min())
+
+    encoder_weights_feature_sets = np.concatenate((encoder_weights, blank_columns, feature_sets), axis=0)
+
+    # make columns are neurons and rows are selections
+    encoder_weights_feature_sets = encoder_weights_feature_sets.T
+
+
+    return encoder_weights_feature_sets
 
 def plot_prefered_directions(C:np.ndarray, plot_states:tuple = (X_VEL_STATE_IND,Y_VEL_STATE_IND),
             ax=None, 
