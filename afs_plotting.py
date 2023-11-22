@@ -12,9 +12,12 @@ X_VEL_STATE_IND = 3
 Y_VEL_STATE_IND = 5
 
 
-def subplots_with_labels(n_rows, n_cols, return_labeled_axes = False,
-                       rel_label_x = -0.25, rel_label_y = 1.1, label_font_size = 11, 
-                       constrained_layout = True, **kwargs):
+def subplots_with_labels(n_rows, n_cols, 
+                         custom_labels = None, #TODO, instead of by capital letters, we can use custom labels
+                         label_directions = 'row_first', # 'row_first' or 'col_first'
+                         return_labeled_axes = False,
+                         rel_label_x = -0.25, rel_label_y = 1.1, label_font_size = 11, 
+                         constrained_layout = True, **kwargs):
 
 
     # if more than 26 subplots, raise an error
@@ -27,16 +30,16 @@ def subplots_with_labels(n_rows, n_cols, return_labeled_axes = False,
     labels = alphabets[:n_rows*n_cols]
 
     # tabulate the labels into n_rows by n_cols array
-    labels = np.array(list(labels)).reshape((n_rows,n_cols))
+    labels = np.array(list(labels)).reshape((n_rows,n_cols), 
+                                            order = 'F' if label_directions == 'col_first' else 'C')
 
-    # make a string where rows are separated by semicolons
-    labels = ";".join(["".join(row) for row in labels])
 
     # make the figure and axes
     fig, labels_axes = plt.subplot_mosaic(labels,
                                         constrained_layout=constrained_layout,
                                         **kwargs)
 
+    
 
     for n, (key, ax) in enumerate(labels_axes.items()):
         ax.text(rel_label_x, rel_label_y, 
