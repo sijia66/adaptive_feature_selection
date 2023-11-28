@@ -14,9 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['full_feature_tracking',
-                    'joint_convex_init_feature',
-                    'joint_convex_encoder_change',]
+exp_types_to_run = ['joint_convex_encoder_change']
 
 total_exp_time = 1200# in seconds
 N_NEURONS = 128
@@ -368,7 +366,8 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     sparsity_array = [0.125]
 
     smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
-    num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]  # specify how many features we want to use, or None
+    # num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]  # specify how many features we want to use, or None
+    num_of_features_array  = [32]  # specify how many features we want to use, or None
     num_lags_array = [3]
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
