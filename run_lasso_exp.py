@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['joint_convex_encoder_change']
+exp_types_to_run = ['joint_convex_init_feature']
 
 total_exp_time = 1200# in seconds
 N_NEURONS = 128
@@ -269,14 +269,17 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
 
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
-    smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
+    # smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
+    smoothness_array = [0.1, 0.125]
 
     num_lags_array = [3]
     
     # random_seeds = np.arange(10)
     random_seeds = np.arange(10)# for the paper, we only use one random seed
-    num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
+    #num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
+
+    num_of_features_array = [32]    
 
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -375,13 +378,13 @@ if "joint_convex_encoder_change" in exp_types_to_run:
 
     # random_seeds = np.arange(10)
     random_seeds = np.arange(10)# for the paper, we only use one random seed
-    
-    for number_of_features in num_of_features_array:
-        for sparsity_val in sparsity_array:
-            for smoothness_val in smoothness_array:
-                for num_lag in num_lags_array:
-                    for decay_factor in  decay_factor_array:
-                        for random_seed in random_seeds:
+    for random_seed in random_seeds:
+        for number_of_features in num_of_features_array:
+            for sparsity_val in sparsity_array:
+                for smoothness_val in smoothness_array:
+                    for num_lag in num_lags_array:
+                        for decay_factor in  decay_factor_array:
+                            
 
                             # no one can escape the beauty of python one-liner, granted at the expense of line width
                             sparsity_val, smoothness_val = np.round(sparsity_val, ROUND_DECIMALS), np.round(smoothness_val, ROUND_DECIMALS)
