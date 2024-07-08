@@ -14,8 +14,9 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['joint_convex_init_feature']
+exp_types_to_run = ['encoder_swap']
 
+MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds
 N_NEURONS = 128
 
@@ -75,13 +76,38 @@ if "encoder_swap" in exp_types_to_run:
     ENCODER_CHANGE_MODE = "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
      
+    random_seeds = np.arange(10)
 
-
-    run_convex_selection(total_exp_time = total_exp_time, 
+    for random_seed in random_seeds:
+        print("********************************************")
+        print("********************************************")
+        print("********************************************")
+        print(f'running experiment with random seed {random_seed}')
+        run_convex_selection(total_exp_time = total_exp_time, 
+                    data_dump_folder=data_dump_folder,
+                    encoder_change_mode = ENCODER_CHANGE_MODE, # we don't want to change the encoder
+                    change_sim_c_at_cycle = change_sim_c_at_cycle,
+                    FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                    RANDOM_INITIAL_FEATURES = False,
+                    RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
+                    number_of_features = 32,
+                    init_feat_first_or_last = "first",
+                    n_neurons = N_NEURONS,   
+                    norm_val= [mean_first_peak, std_of_peaks],
+                    norm_var_2= [mean_second_peak, std_of_peaks],
+                    train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                    random_seed = random_seed
+                    )
+    
+        # oracle feature selection
+        change_feature_at_by_batch = 30  
+        run_convex_selection(total_exp_time = total_exp_time, 
                 data_dump_folder=data_dump_folder,
                 encoder_change_mode = ENCODER_CHANGE_MODE, # we don't want to change the encoder
                 change_sim_c_at_cycle = change_sim_c_at_cycle,
-                FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                FEATURE_SELETOR_TYPE='Oracle', # this is the default setting and does not do anything
+                change_feature_at = change_feature_at_by_batch,
+                change_feature_mode = "change_to_new_sim_c",
                 RANDOM_INITIAL_FEATURES = False,
                 RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
                 number_of_features = 32,
@@ -90,26 +116,8 @@ if "encoder_swap" in exp_types_to_run:
                 norm_val= [mean_first_peak, std_of_peaks],
                 norm_var_2= [mean_second_peak, std_of_peaks],
                 train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                random_seed = random_seed
                 )
-    
-    # oracle feature selection
-    change_feature_at_by_batch = 30  
-    run_convex_selection(total_exp_time = total_exp_time, 
-            data_dump_folder=data_dump_folder,
-            encoder_change_mode = ENCODER_CHANGE_MODE, # we don't want to change the encoder
-            change_sim_c_at_cycle = change_sim_c_at_cycle,
-            FEATURE_SELETOR_TYPE='Oracle', # this is the default setting and does not do anything
-            change_feature_at = change_feature_at_by_batch,
-            change_feature_mode = "change_to_new_sim_c",
-            RANDOM_INITIAL_FEATURES = False,
-            RANDOM_INITIAL_FEATURES_COUNT = NUM_INITIAL_FEATURES,
-            number_of_features = 32,
-            init_feat_first_or_last = "first",
-            n_neurons = N_NEURONS,   
-            norm_val= [mean_first_peak, std_of_peaks],
-            norm_var_2= [mean_second_peak, std_of_peaks],
-            train_high_SNR_time  = 10, #  60 batches or  1200 times)
-            )
 
 
 if "full_feature_tracking" in exp_types_to_run:
@@ -269,17 +277,14 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
 
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
-    # smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
-    smoothness_array = [0.1, 0.125]
 
     num_lags_array = [3]
     
     # random_seeds = np.arange(10)
     random_seeds = np.arange(10)# for the paper, we only use one random seed
-    #num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
+    smoothness_array = np.array([0, 0.05, 0.075, 0.1, 0.125])
+    num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
-
-    num_of_features_array = [32]    
 
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -326,8 +331,6 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     data_dump_folder = \
    '/home/aolab/sijia/data/figure5_convex_encoder_change/'
     
-    random_seed = 2
-    
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
@@ -369,8 +372,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     sparsity_array = [0.125]
 
     smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
-    # num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]  # specify how many features we want to use, or None
-    num_of_features_array  = [32]  # specify how many features we want to use, or None
+    num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]  # specify how many features we want to use, or None
     num_lags_array = [3]
 
     # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
