@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['encoder_swap']
+exp_types_to_run = ['joint_convex_init_feature']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds
@@ -341,29 +341,6 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # encoder_change_mode = "swap_tuning"
     encoder_change_mode = "shuffle_rows"
     # encoder_change_mode= "change_to_zeros"
-    
-    
-    
-    # # # without feature selection
-    # feature_selector_type = "full"
-    
-        
-
-    # run_convex_selection(total_exp_time = total_exp_time, n_neurons= N_NEURONS,
-    #                     data_dump_folder = data_dump_folder,
-    #                     norm_val= [mean_first_peak, std_of_peaks],
-    #                     norm_var_2= [mean_second_peak, std_of_peaks],
-    #                     train_high_SNR_time
-    #                         = 10, #  60 batches or  1200 times)
-    #                     FEATURE_SELETOR_TYPE=feature_selector_type,
-    #                     RANDOM_INITIAL_FEATURES=False,
-    #                     encoder_change_mode = encoder_change_mode,
-    #                     change_sim_c_at_cycle = change_sim_c_at_cycle,
-    #                     random_seed=random_seed
-    # )
-    # print("********************************************")
-    
-    
 
     feature_selector_type = 'joint_convex'
 
