@@ -1200,7 +1200,7 @@ class LassoFeatureSelector(FeatureSelector):
         target_states = [3,5] # 3 for x_vel and 5 for y_vel
         
         #fitted results to lasso_model._coef
-        self.lasso_model.fit(target_matrix[:, target_states], feature_matrix)
+        self.lasso_model.fit(feature_matrix, target_matrix[:, target_states])
         self.measure_ready = True
         
         #save to the history of measures
@@ -1214,7 +1214,7 @@ class LassoFeatureSelector(FeatureSelector):
            return
 
         weights = self.get_feature_weights()
-        weights_norm = np.linalg.norm(weights, axis=1)
+        weights_norm = np.linalg.norm(weights, axis=0)
 
         # sort the weights_norm in descending order
         # and get top N number of features

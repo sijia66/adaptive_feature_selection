@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['joint_convex_init_feature']
+exp_types_to_run = ['full_feature_tracking']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds
@@ -129,14 +129,13 @@ if "full_feature_tracking" in exp_types_to_run:
     updater_type = "smooth_batch_with_full_feature"
     
     # random_seed = 0
-    random_seeds = np.arange(10)
+    random_seeds = np.arange(1)
     
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
-    
-    feature_selector_type = 'joint_convex'
+
 
 
     #sparsity_array = np.arange(0.05, 0.15, 0.01)
@@ -156,11 +155,11 @@ if "full_feature_tracking" in exp_types_to_run:
 
 
 
-        # lasso feature selection
+    # lasso feature selection
     #lasso_alphas = [0.01, 0.1, 1, 10]
     lasso_alphas = [10]
     lasso_thresholds = [1]
-    number_of_features_array = [ 64]
+    number_of_features_array = [64]
 
     
     feature_selector_type = 'lasso'
