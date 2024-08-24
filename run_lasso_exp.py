@@ -129,7 +129,7 @@ if "full_feature_tracking" in exp_types_to_run:
     updater_type = "smooth_batch_with_full_feature"
     
     # random_seed = 0
-    random_seeds = np.arange(1)
+    random_seeds = np.arange(10)
     
     # we set up the neural populations
     mean_first_peak = 50
