@@ -137,19 +137,6 @@ if "full_feature_tracking" in exp_types_to_run:
     std_of_peaks = 3
 
 
-
-    #sparsity_array = np.arange(0.05, 0.15, 0.01)
-    # smoothness_array = np.arange(0, 0.15, 0.025)
-    sparsity_array = [0.125]
-
-    smoothness_array = [0.05]
-    num_lags_array = [3]
-
-    # decay_factor_array = np.round(decay_factor_array, ROUND_DECIMALS)
-    decay_factor_array = [0.5]
-
-    
-    number_of_features = 32
     encoder_change_mode = "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
 
@@ -159,7 +146,7 @@ if "full_feature_tracking" in exp_types_to_run:
     #lasso_alphas = [0.01, 0.1, 1, 10]
     lasso_alphas = [10]
     lasso_thresholds = [1]
-    number_of_features_array = [64]
+    number_of_features_array = [32]
 
     
     feature_selector_type = 'lasso'
