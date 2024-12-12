@@ -188,8 +188,10 @@ def get_cmap(n_lines, color = None):
     return cmap
 
 
-def plot_feature_selection(active_feat_set_list, ax = None, selected_color = 'white', unselected_color = 'black',
-                                                 label_x = True, default_x_label = 'Learner batch',
+def plot_feature_selection(active_feat_set_list, ax = None, 
+                           selected_color = 'white', 
+                           unselected_color = 'black',
+                                                 label_x = True, default_x_label = 'Batch Number',
                                                  label_y = True, default_y_label = 'Feature index'):
     """
     plot the selection strategy map. 
