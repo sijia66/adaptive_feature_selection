@@ -275,12 +275,6 @@ class FeatureSelector():
 
         self._change_one_flag = False 
  
-
-        #update the used C matrix  with the current values 
-        if True:
-            # print("select_decoder_features:,", self.used_C_mat[self._prev_feat_set, : ].shape )  
-            # print(f"select_decoder_features: {target_decoder.filt.C.shape}")
-            pass
         
         # this is only for the first time
         if self.used_C_mat[self._prev_feat_set, : ].shape != target_decoder.filt.C.shape:
@@ -736,7 +730,7 @@ class JointConvexFeatureSelector(FeatureSelector):
         # the stuff for the achieving some fraction of the feature selection method
         self._objective_offset = kwargs.pop('objective_offset', 1)
         
-        self._smooth_the_matrices = kwargs.pop('smooth_the_matrices', True)
+        self._smooth_the_matrices = kwargs.pop('smooth_the_matrices', False)
 
 
         self._setup_sparse_smooth_params(**kwargs)
@@ -777,10 +771,11 @@ class JointConvexFeatureSelector(FeatureSelector):
         temp_selection_scores[self._active_feat_set] = 1.0
         
         # we enque the prior feature score
-        for i in range(self._num_lags):
-            self._curr_prior_deque.appendleft(temp_selection_scores)
+        
+        self._curr_prior_deque.appendleft(temp_selection_scores)
 
-        self._next_disc_memory = np.repeat(temp_selection_scores[:,np.newaxis], self._num_lags, axis = 1)
+        #self._next_disc_memory = np.repeat(temp_selection_scores[:,np.newaxis], self._num_lags, axis = 1)
+        self._next_disc_memory = np.array(self._curr_prior_deque).T
 
         print("initialzied memoery deque", temp_selection_scores.shape)
         print("initialized memory deque with length of ", len(self._curr_prior_deque))
@@ -822,15 +817,10 @@ class JointConvexFeatureSelector(FeatureSelector):
            return
 
         # bad software practice, has to assume access to the kf c decoder
-        
-       print("determine change features", obs_c_mat.shape, noise_q_mat.shape)
 
        obs_c_velocity_states_only = obs_c_mat[:, (X_VEL_STATE_IND, Y_VEL_STATE_IND)]
        diag_noise_q_mat = np.diag(np.diag(noise_q_mat))
 
-
-        # we use different obj functions for the dual objectives
-       print("joint_sparseness_sparseness: ", self._next_disc_memory.shape, "num_lags",  self._num_lags)
 
        selected_values, result = self.convex_feature_selection_with_joint_smooth_sparse_goals(obs_c_velocity_states_only, 
                                                                 diag_noise_q_mat, 
@@ -838,9 +828,7 @@ class JointConvexFeatureSelector(FeatureSelector):
                                                                 self._smoothness_coef,
                                                                 self._next_disc_memory, 
                                                                 number_of_features = self._number_of_features,)
-                                                                
-       print("doing joint smooth sparse optimization at batch ", self.feature_measure_count)
-
+                                                            
 
        
        # set up the rotation mechanism, sort of thing.
@@ -849,13 +837,16 @@ class JointConvexFeatureSelector(FeatureSelector):
            self._curr_prior_deque.pop()
 
        # set it up so 
-       print("curr_prior_deque", np.array(self._curr_prior_deque).shape)
        self._next_disc_memory = np.array(self._curr_prior_deque).T
        self._next_disc_memory = self._alpha * self._next_disc_memory
 
 
        # threshold the values and calc the active features.
-       selected_indices = np.argwhere(selected_values >= self._selection_threshold)
+       selected_indices = np.argwhere(selected_values > self._selection_threshold)
+
+       # select top number of features
+       if self._number_of_features is not None:
+            selected_indices = np.argsort(selected_values)[::-1][:self._number_of_features]
 
        # we are gonna take the intersection with exisiting features
        all_selected_features = np.full(self.N_TOTAL_AVAIL_FEATS, False, dtype = bool)
@@ -1482,8 +1473,8 @@ def run_exp_loop(exp,  **kwargs):
                 #take care of the decoder selection stuff
                 if exp.is_decoder_change():
                     #only select the first four neurons
-                    print(f'decoder changes here at {exp.cycle_count}')
-                    exp.select_decoder_features(exp.decoder, debug = False)
+                    print(f'decoder does not change here at {exp.cycle_count}')
+                    # exp.select_decoder_features(exp.decoder, debug = False)
                 
                 #record the current feature active set
                 exp.record_feature_active_set(exp.decoder)
