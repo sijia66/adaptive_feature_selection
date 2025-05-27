@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['fraction_of_neurons']
+exp_types_to_run = ['full_feature_tracking']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds # for all exps, except the fraction_of_neurons

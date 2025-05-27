@@ -1474,7 +1474,7 @@ def run_exp_loop(exp,  **kwargs):
                 if exp.is_decoder_change():
                     #only select the first four neurons
                     print(f'decoder does not change here at {exp.cycle_count}')
-                    # exp.select_decoder_features(exp.decoder, debug = False)
+                    exp.select_decoder_features(exp.decoder, debug = False)
                 
                 #record the current feature active set
                 exp.record_feature_active_set(exp.decoder)
