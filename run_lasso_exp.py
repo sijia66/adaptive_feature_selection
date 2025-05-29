@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['full_feature_tracking']
+exp_types_to_run = ['feature_gap_scan']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds # for all exps, except the fraction_of_neurons
@@ -34,32 +34,34 @@ if "feature_gap_scan" in exp_types_to_run:
     std_of_peaks = 3
     
     mean_differences = [0, 50]
-    
-    for mean_diff in mean_differences:
-        mean_second_peak = mean_first_peak + mean_diff
 
-        print("********************************************")
-        print("********************************************")
-        print("********************************************")
+    for random_seed in range(MAX_NUMBER_RANDOM_SEEDS):
+        for mean_diff in mean_differences:
+            mean_second_peak = mean_first_peak + mean_diff
 
-        print(f'running experiment with second peak at {mean_second_peak}')
-        run_convex_selection(total_exp_time = total_exp_time, 
-                    data_dump_folder=data_dump_folder,
-                    encoder_change_mode = "same", # we don't want to change the encoder
-                    FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
-                    RANDOM_INITIAL_FEATURES = True,
-                    number_of_features = 32,
-                    n_neurons = N_NEURONS,   
-                    norm_val= [mean_first_peak, std_of_peaks],
-                    norm_var_2= [mean_second_peak, std_of_peaks],
-                    train_high_SNR_time  = 10, #  60 batches or  1200 times)
-                    )
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
+
+            print(f'running experiment with second peak at {mean_second_peak}')
+            run_convex_selection(total_exp_time = total_exp_time, 
+                        random_seed=random_seed,
+                        data_dump_folder=data_dump_folder,
+                        encoder_change_mode = "same", # we don't want to change the encoder
+                        FEATURE_SELETOR_TYPE='full', # this is the default setting and does not do anything
+                        RANDOM_INITIAL_FEATURES = True,
+                        number_of_features = 32,
+                        n_neurons = N_NEURONS,   
+                        norm_val= [mean_first_peak, std_of_peaks],
+                        norm_var_2= [mean_second_peak, std_of_peaks],
+                        train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                        )
 
 
-        print("********************************************")
-        print("********************************************")
-        print("********************************************")
-        
+            print("********************************************")
+            print("********************************************")
+            print("********************************************")
+            
 if "encoder_swap" in exp_types_to_run:
     # actually running the experiments
 # data saving stuff
