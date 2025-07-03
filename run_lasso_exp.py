@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['fraction_of_neurons']
+exp_types_to_run = ['joint_convex_encoder_change']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds # for all exps, except the fraction_of_neurons
@@ -27,7 +27,7 @@ if "feature_gap_scan" in exp_types_to_run:
 # data saving stuff
 
     data_dump_folder = \
-    '/home/aolab/sijia/data/figure2_simulation_setup/'
+    '/data/simulation/feature_selection/figure2_simulation_setup/'
     # gap difference
     # exp_type = 'gap_difference'
     mean_first_peak = 50
@@ -70,15 +70,15 @@ if "encoder_swap" in exp_types_to_run:
     # 231101_afs_figure2_full_feature_selection.ipynb
 
     data_dump_folder = \
-    '/home/aolab/sijia/data/figure2_simulation_setup/'
+    '/data/simulation/feature_selection/figure2_simulation_setup/'
     mean_first_peak = 50
     mean_second_peak = 100
     std_of_peaks = 3
     NUM_INITIAL_FEATURES = 32
-    encoder_change_modes = ["same"] #"same", "shuffle_rows"
+    encoder_change_modes = ["shuffle_rows"] #"same", "shuffle_rows"
     change_sim_c_at_cycle = 18000 # 
      
-    random_seeds = np.arange(1)
+    random_seeds = np.arange(10)
 
     for random_seed in random_seeds:
         for ENCODER_CHANGE_MODE in encoder_change_modes: 
@@ -98,7 +98,7 @@ if "encoder_swap" in exp_types_to_run:
                         n_neurons = N_NEURONS,   
                         norm_val= [mean_first_peak, std_of_peaks],
                         norm_var_2= [mean_second_peak, std_of_peaks],
-                        train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                        train_high_SNR_time  = 0, #  60 batches or  1200 times)
                         random_seed = random_seed
                         )
         
@@ -118,7 +118,7 @@ if "encoder_swap" in exp_types_to_run:
                     n_neurons = N_NEURONS,   
                     norm_val= [mean_first_peak, std_of_peaks],
                     norm_var_2= [mean_second_peak, std_of_peaks],
-                    train_high_SNR_time  = 10, #  60 batches or  1200 times)
+                    train_high_SNR_time  = 0, #  60 batches or  1200 times)
                     random_seed = random_seed
                     )
 
@@ -126,8 +126,8 @@ if "encoder_swap" in exp_types_to_run:
 if "full_feature_tracking" in exp_types_to_run:
     
     data_dump_folder = \
-    '/home/aolab/sijia/data/figure3_lasso/'
-    
+    '/data/simulation/feature_selection/figure3_lasso/'
+
     # updater_type = "smooth_batch"
     updater_type = "smooth_batch_with_full_feature"
     
@@ -247,7 +247,7 @@ if "joint_convex_init_feature" in exp_types_to_run:
     # /231019_afs_grid_random_start_smoothness_sparsity.ipynb
 
     data_dump_folder = \
-    '/home/aolab/sijia/data/figure4_convex_stationary_encoder/'
+    '/data/simulation/feature_selection/figure4_convex_stationary_encoder/'
     
     # we set up the neural populations
     mean_first_peak = 50
@@ -322,8 +322,8 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     # '/home/sijia-aw/BMi3D_my/operation_funny_chicken/sim_data/convex_selection/grid_scan_sparsity_decay/'
     
     data_dump_folder = \
-   '/home/aolab/sijia/data/figure5_convex_encoder_change/'
-    
+   '/data/simulation/feature_selection/figure5_convex_encoder_change/'
+
     # we set up the neural populations
     mean_first_peak = 50
     mean_second_peak = 100
@@ -470,7 +470,7 @@ if "fraction_of_neurons" in exp_types_to_run:
     # 231108_afs_fraction_of_neurons_and_smoothness_randomness.ipynb
 
     data_dump_folder = \
-    '/home/aolab/sijia/data/figure7_fraction_of_neurons/'
+    '/data/simulation/feature_selection/figure7_fraction_of_neurons/'
 
     total_exp_time = 600
 
