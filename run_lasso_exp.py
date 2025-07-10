@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['joint_convex_encoder_change']
+exp_types_to_run = ['joint_convex_init_feature','joint_convex_encoder_change']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds # for all exps, except the fraction_of_neurons
@@ -268,15 +268,20 @@ if "joint_convex_init_feature" in exp_types_to_run:
 
     num_lags_array = [3]
     
-    random_seeds = np.arange(2)
+    random_seeds = np.arange(10)
     # smoothness_array = np.array([0, 0.05, 0.075, 0.1, 0.125])
     # num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
     #TODO: add 32 to that number of features array
 
+    # for figure 6
+    smoothness_array = np.array([0, 0.125, 0.25, 0.5])
+    num_of_features_array  = [32]  # specify how many features we want to use, or None
+
+    # for figure 7
     # we use these parameters to test out the algorithms
     # smoothness_array = np.array([0, 0.125, 0.25, 0.5, 1.0])
-    smoothness_array = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
-    num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
+    # smoothness_array = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    # num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
 
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -316,6 +321,9 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     """
     we are also changing the features of the encoder, and see how the feature selection performs
     """
+    # the analysis code is 
+    # figure5_convex_algorithm_shuffled_encoder/
+    # 231019_afs_change_encoder_convex_lasso.ipynb
 
     # noise scan
     # data_dump_folder = \
@@ -340,15 +348,15 @@ if "joint_convex_encoder_change" in exp_types_to_run:
     sparsity_array = [0.125]
 
     # num_of_features_array  = [8, 16, 24, 32, 40, 48, 56, 64, 96]  # specify how many features we want to use, or None
-    random_seeds = np.arange(1)# for the paper, we only use one random seed
+    random_seeds = np.arange(10)#
 
     num_lags_array = [3]
     decay_factor_array = [0.2]
 
     # we use these parameters to test out the algorithms
-    # smoothness_array = np.array([0.3, 0.35, 0.4, 0.45,
-    #                              0.5])
-    smoothness_array = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    #smoothness_array = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    smoothness_array = np.array([0, 0.125, 0.25, 0.5])
+    # smoothness_array = np.array([0, 0.05, 0.1, 0.125])
     num_of_features_array = [32]  # specify how many features we want to use, or None
 
     for random_seed in random_seeds:
@@ -367,7 +375,7 @@ if "joint_convex_encoder_change" in exp_types_to_run:
                                                 norm_val= [mean_first_peak, std_of_peaks],
                                                 norm_var_2= [mean_second_peak, std_of_peaks],
                                                 train_high_SNR_time
-                                                    = 1, #  60 batches or  1200 times)
+                                                    = 0, #  60 batches or  1200 times)
                                                 FEATURE_SELETOR_TYPE='joint_convex',
                                                 number_of_features = number_of_features,
                                                 threshold_selection = 0.5,
@@ -493,8 +501,7 @@ if "fraction_of_neurons" in exp_types_to_run:
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
     # the first batch of experiments was only with 0.1
     # smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
-    # smoothness_array = np.arange(0, 0.6,  0.1)
-    smoothness_array = [0.5]
+    smoothness_array = np.arange(0, 0.6,  0.1)
 
 
     num_lags_array = [3]

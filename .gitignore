@@ -6,6 +6,7 @@
 *.log
 *.pdf
 *.png
+*.out
 wo_feature selection
 
 !afs_clda_more_neurons_different_neurons_sfn.ipynb
