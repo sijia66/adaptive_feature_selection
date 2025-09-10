@@ -14,7 +14,7 @@ exp_types = [
              'full_feature_tracking',
              'total_number_of_features',
              'fraction_of_neurons']
-exp_types_to_run = ['joint_convex_init_feature','joint_convex_encoder_change']
+exp_types_to_run = ['fraction_of_neurons']
 
 MAX_NUMBER_RANDOM_SEEDS = 10 # e.g.10 random seeds would be mean 0, 1, 2, and so on
 total_exp_time = 1200# in seconds # for all exps, except the fraction_of_neurons
@@ -274,14 +274,14 @@ if "joint_convex_init_feature" in exp_types_to_run:
     #TODO: add 32 to that number of features array
 
     # for figure 6
-    smoothness_array = np.array([0, 0.125, 0.25, 0.5])
-    num_of_features_array  = [32]  # specify how many features we want to use, or None
+    # smoothness_array = np.array([0, 0.125, 0.25, 0.5])
+    # num_of_features_array  = [32]  # specify how many features we want to use, or None
 
     # for figure 7
     # we use these parameters to test out the algorithms
-    # smoothness_array = np.array([0, 0.125, 0.25, 0.5, 1.0])
+    smoothness_array = np.array([0, 0.125, 0.25, 0.5])
     # smoothness_array = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
-    # num_of_features_array  = list(range(8, N_NEURONS + 8, 8))  # specify how many features we want to use, or None
+    num_of_features_array  = list(range(8, N_NEURONS + 8, 16))  # specify how many features we want to use, or None
 
     for sparsity_val in sparsity_array:
         for smoothness_val in smoothness_array:
@@ -501,12 +501,13 @@ if "fraction_of_neurons" in exp_types_to_run:
     #smoothness_array =  np.arange(0.025, 0.15, 0.025)
     # the first batch of experiments was only with 0.1
     # smoothness_array = np.arange(0.0, 0.15, 0.025) # this is different from the start out from the full feature set
-    smoothness_array = np.arange(0, 0.6,  0.1)
+    smoothness_array = np.array([0, 0.125, 0.25, 0.5])
+    # smoothness_array = np.arange(0, 0.6,  0.1)
 
 
     num_lags_array = [3]
     
-    random_seeds = np.arange(2,6)
+    random_seeds = np.arange(6)
     #num_of_features_array  = [8, 16, 64, 96]   # specify how many features we want to use, or None
     num_of_features_array  = [32]   # specify how many features we want to use, or None
 

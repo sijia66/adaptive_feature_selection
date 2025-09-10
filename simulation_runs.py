@@ -7,7 +7,7 @@
 # # ideas
 # import libraries
 # make sure these directories are in the python path., 
-from bmimultitasks import SimBMIControlMulti, SimBMICosEncKFDec, BMIControlMultiNoWindow, SimpleTargetCapture, SimpleTargetCaptureWithHold
+from bmimultitasks import  SimpleTargetCaptureWithHold
 from features import SaveHDF
 from features.simulation_features import get_enc_setup, SimKFDecoderRandom,SimIntentionLQRController, SimClockTick
 from features.simulation_features import SimHDF, SimTime
